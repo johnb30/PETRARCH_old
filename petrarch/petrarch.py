@@ -59,6 +59,30 @@ def read_data(filepath, event_dict):
         #Add the new dict to the events dict with the ID as the key
         event_dict[ident] = story_info
 
+def get_np(tree, event_dict):
+    noun_phrases = []
+    for sub in tree.subtrees(filter=lambda x: x.node == 'NP'):
+        nouns = []
+        for i in xrange(len(sub)):
+            nouns.append(sub[i][0])
+        nouns = ' '.join(nouns)
+        noun_phrases.append(nouns)
+    event_dict[key]['noun_phrases'] = noun_phrases
+
+
+def get_vp(tree, event_dict):
+    verb_phrases = []
+    prev_type = None
+    prev_chunk = None
+    for sub in tree.subtrees(filter=lambda x: x != 'S'):
+        if prev_type == 'VP' and sub.node == 'NP':
+            verb = ' '.join([vw[0] for vw in prev_chunk])
+            noun = ' '.join([nw[0] for nw in sub])
+            verb_phrases.append((verb, noun))
+        prev_type = sub.node
+        prev_chunk = sub
+    event_dict[key]['verb_phrases'] = verb_phrases
+
 
 def parse_sent(sent, event_dict, key, input_chunker):
     #Tokenize the words
@@ -70,18 +94,23 @@ def parse_sent(sent, event_dict, key, input_chunker):
     tree = chunker.parse(tags)
     event_dict[key]['tagged'] = tags
     event_dict[key]['sent_tree'] = tree
+    get_np(tree, event_dict)
+    get_vp(tree, event_dict)
+
 
 if __name__ == '__main__':
-    events = dict()
+    events = {}
     print 'Reading in data...'
     sentence_file = sys.argv[1]
     read_data(sentence_file, events)
     print 'Parsing sentences...'
     ubt_chunker = create_chunkers()
-    for key in events.keys():
+    for key in events:
         parse_sent(events[key]['story'], events, key, ubt_chunker)
     for event in events:
         print '=======================\n'
         print 'event id: {}\n'.format(event)
         print 'POS tagged sent:\n {}\n'.format(events[event]['tagged'])
         print 'NP tagged sent:\n {}\n'.format(events[event]['sent_tree'])
+        print 'Noun phrases: \n {}\n'.format(events[event]['noun_phrases'])
+        print 'Verb phrases: \n {}\n'.format(events[event]['verb_phrases'])
