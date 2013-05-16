@@ -25,6 +25,9 @@ def create_chunkers():
 
     """
     #Get training data for chunker
+    #Alternate between penn treebank and conll2000 to see which gets better
+    #results
+    #train_sents = nk.corpus.treebank_chunk.chunked_sents()
     train_sents = nk.corpus.conll2000.chunked_sents('train.txt')
     train_chunks = _conll_tag_chunks(train_sents)
 
@@ -185,6 +188,7 @@ def parse_sent(sent, key, input_chunker):
     toks = nk.word_tokenize(sent)
     #Part-of-speech tag the tokens
     tags = nk.pos_tag(toks)
+    tags = [tag for tag in tags if tag[1] != 'POS']
     chunker = TagChunker(input_chunker)
     #Use chunker to chunk the tagged words and combine into a tree
     tree = chunker.parse(tags)
