@@ -1,4 +1,5 @@
 import nltk as nk
+import preprocess
 import itertools
 import sys
 from joblib import Parallel, delayed
@@ -204,7 +205,23 @@ def parse_sent(sent, key, input_chunker):
     return sub_event_dict
 
 
-def parse(event_dict, input_chunker):
+def post_process(sent, key, username):
+    sub_event_dict = {key: {}}
+    #Tokenize the words
+    toks = nk.word_tokenize(sent)
+    #Part-of-speech tag the tokens
+    tags = nk.pos_tag(toks)
+    pp = preprocess.Process(tags)
+    lat, lon = pp.geolocate(username)
+    sub_event_dict[key]['lat'] = lat
+    sub_event_dict[key]['lon'] = lon
+
+    sub_event_dict[key]['num_involved'] = pp.num_involved()
+
+    return sub_event_dict
+
+
+def parse(event_dict, input_chunker, username, process2=False):
     """
     Function that calls the `parse_sent` function in parallel. Helper
     function to make calling the necessary functions cleaner.
@@ -227,19 +244,36 @@ def parse(event_dict, input_chunker):
     parsed = Parallel(n_jobs=-1)(delayed(parse_sent)
                                  (sent=event_dict[key]['story'], key=key,
                                   input_chunker=input_chunker)
-                                  for key in event_dict)
+                                 for key in event_dict)
 
     for parsed_sent in parsed:
         key = parsed_sent.keys()[0]
         event_dict[key].update(parsed_sent[key])
 
+    if process2:
+        post_parsed = Parallel(n_jobs=-1)(delayed(post_process)
+                                         (sent=event_dict[key]['story'],
+                                          key=key,
+                                          username=username)
+                                          for key in event_dict)
+
+        for post_parsed_sent in post_parsed:
+            key = post_parsed_sent.keys()[0]
+            event_dict[key].update(post_parsed_sent[key])
+
 if __name__ == '__main__':
     print 'Reading in data...'
     sentence_file = sys.argv[1]
+    geo_user = sys.argv[2]
+    post_proc = sys.argv[3]
+    if post_proc == 'True':
+        post_proc = True
+    elif post_proc == 'False':
+        post_proc = False
     ubt_chunker = create_chunkers()
     print 'Parsing sentences...'
     events = read_data(sentence_file)
-    parse(events, ubt_chunker)
+    parse(events, ubt_chunker, geo_user, post_proc)
     for event in events:
         print '=======================\n'
         print 'event id: {}\n'.format(event)
@@ -247,3 +281,12 @@ if __name__ == '__main__':
         print 'NP tagged sent:\n {}\n'.format(events[event]['sent_tree'])
         print 'Noun phrases: \n {}\n'.format(events[event]['noun_phrases'])
         print 'Verb phrases: \n {}\n'.format(events[event]['verb_phrases'])
+        try:
+            print 'Geolocate: \n {}, {}\n'.format(events[event]['lat'],
+                                                  events[event]['lon'])
+        except KeyError:
+            pass
+        try:
+            print 'Feature extract: \n {}\n'.format(events[event]['num_involved'])
+        except KeyError:
+            pass

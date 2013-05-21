@@ -1,0 +1,5 @@
+PyYAML==3.10
+joblib==0.7.0d
+nltk==2.0.4
+numpy==1.7.1
+simplejson==3.3.0
