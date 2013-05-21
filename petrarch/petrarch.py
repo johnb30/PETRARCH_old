@@ -1,7 +1,7 @@
 import nltk as nk
 import preprocess
 import itertools
-import sys
+import argparse
 from joblib import Parallel, delayed
 
 #Chunker code pulled from
@@ -263,17 +263,39 @@ def parse(event_dict, input_chunker, username, process2=False):
 
 if __name__ == '__main__':
     print 'Reading in data...'
-    sentence_file = sys.argv[1]
-    geo_user = sys.argv[2]
-    post_proc = sys.argv[3]
-    if post_proc == 'True':
-        post_proc = True
-    elif post_proc == 'False':
-        post_proc = False
-    ubt_chunker = create_chunkers()
+    defaults = argparse.ArgumentParser()
+    defaults.add_argument('-i', '--inputs',
+                          help='File, or directory of files, to parse.', 
+                          default=None)
+    defaults.add_argument('-o', '--output', help='File to write parsed events',
+                          default=None)
+    defaults.add_argument('-u', '--username', help="geonames.org username",
+                          default=None)
+    defaults.add_argument('-p', '--postprocess', help="""Whether post 
+                          processing, such as geolocation and feature 
+                          extraction, should occur. Default False.""",
+                          default=False, action='store_true')
+#These will be used as the program develops further.
+#    defaults.add_argument('-g', '--geolocate', action='store_true',
+#                          default=False, help="""Whether to geolocate events.
+#                          Defaults to False""")
+#    defaults.add_argument('-f', '--features', action='store_true',
+#                          default=False,
+#                          help="""Whether to extract features from sentence.
+#                          Defaults to False""")
+    defaults.add_argument('-n', '--n_cores', type=int, default=-1,
+                          help="""Number of cores to use for parallel
+                          processing. Defaults to -1 for all cores""")
+    args = defaults.parse_args()
+    inputs = args.inputs
+    out_path = args.output
+    username = args.username
+    post_proc = args.postprocess
+
+    ubt_chunker = create_chunkers() 
     print 'Parsing sentences...'
-    events = read_data(sentence_file)
-    parse(events, ubt_chunker, geo_user, post_proc)
+    events = read_data(inputs)
+    parse(events, ubt_chunker, username, post_proc)
     for event in events:
         print '=======================\n'
         print 'event id: {}\n'.format(event)
