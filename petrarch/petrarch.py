@@ -18,6 +18,12 @@ def _conll_tag_chunks(chunk_sents):
 def create_chunkers():
     """
     Function to create and train a chunker used to POS-tagged sentences.
+
+    Returns
+    -------
+
+    ubt_chunker : NLTK trained chunker trained using unigrams, bigrams, and
+                  trigrams.
     """
     #Get training data for chunker
     #Alternate between penn treebank and conll2000 to see which gets better
