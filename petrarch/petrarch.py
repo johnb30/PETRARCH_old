@@ -22,7 +22,8 @@ def create_chunkers():
     Returns
     -------
 
-    ubt_chunker : NLTK trained chunker trained using unigrams, bigrams, and
+    ubt_chunker : NLTK chunker. 
+                  NLTK trained chunker trained using unigrams, bigrams, and
                   trigrams.
     """
     #Get training data for chunker
@@ -41,6 +42,8 @@ def create_chunkers():
 
 
 class TagChunker(nk.chunk.ChunkParserI):
+    """Class used to create a chunker for use in parsing POS-tagged 
+    sentences."""
     def __init__(self, chunk_tagger):
         self._chunk_tagger = chunk_tagger
 
@@ -48,15 +51,17 @@ class TagChunker(nk.chunk.ChunkParserI):
         """
         Function to chunk a POS-tagged sentence using a trained chunker.
 
-        Inputs
+        Parameters
         ------
 
-        tokens : POS-tagged sentence.
+        tokens : List.
+                 POS-tagged sentence.
 
         Returns
         -------
 
-        chunked : chunked sentence.
+        chunked : NLTK tree object.
+                  Chunked sentence in NLTK tree form.
 
         """
         # split words and part of speech tags
@@ -79,10 +84,11 @@ def read_data(filepath):
     in the traditional TABARI format. Adds each sentence, along with the
     meta data, to a dictionary.
 
-    Input
+    Parameters
     -----
 
-    filepath : filepath of the file containing the sentence to be parsed.
+    filepath : String.
+               filepath of the file containing the sentence to be parsed.
 
     """
     event_dict = dict()
@@ -108,16 +114,17 @@ def _get_np(tree):
     Private function to extract noun phrases from a parse tree of any given
     sentence.
 
-    Inputs
+    Parameters
     ------
 
-    tree : parse tree for a particular sentence. NLTK tree object.
+    tree : NLTK tree object.
+           Parse tree for a particular sentence.
 
     Returns
     -------
 
-    noun_phrases : noun phrases within a sentence. List.
-
+    noun_phrases :  List.
+                    Noun phrases within a sentence.
     """
     noun_phrases = []
     for sub in tree.subtrees(filter=lambda x: x.node == 'NP'):
@@ -135,16 +142,18 @@ def _get_vp(tree):
     Private function to extract verb phrases from a parse tree of any given
     sentence.
 
-    Inputs
+    Parameters
     ------
 
-    tree : parse tree for a particular sentence. NLTK tree object.
+    tree : NLTK tree object.
+           Parse tree for a particular sentence.
 
     Returns
     -------
 
-    verb_phrases : collection of verb phrases in a sentence. List of tuples.
-                   The tuples are of the form (verb, noun phrase), where the
+    verb_phrases : List of tuples.
+                   Collection of verb phrases in a sentence. The tuples are 
+                   of the form (verb, noun phrase), where the
                    noun phrase is one that immediately follows the verb.
 
     """
@@ -167,21 +176,25 @@ def parse_sent(sent, key, input_chunker):
     Function to parse a given sentence. Tokenizes, POS tags, and chunks a
     given sentence, along with extracting noun and verb phrases.
 
-    Inputs
+    Parameters
     ------
 
-    sent : sentence to be parsed. String.
+    sent : String.
+           Sentence to be parsed.
 
-    key : key of the event used to access the event from the events
-            dictionary. String.
+    key : String.
+          Key of the event used to access the event from the events
+          dictionary.
 
     input_chunker : trained NLTK chunker.
 
     Returns
     -------
 
-    sub_event_dict : dictionary containing the POS-tagged sentence, chunked
-    sentence, noun phrases, and verb phrases for each event in the input file.
+    sub_event_dict : Dictionary.
+                     Container for  the POS-tagged sentence, chunked
+                     sentence, noun phrases, and verb phrases for each event 
+                     in the input file.
 
     """
     sub_event_dict = {key: {}}
@@ -206,6 +219,23 @@ def parse_sent(sent, key, input_chunker):
 
 
 def post_process(sent, key, username):
+    """
+    Helper function to call the various post-processing functions, e.g. 
+    geolocation and feature extraction.
+
+    Parameters
+    ------
+
+    sent: String.
+          Sentence to parse.
+
+    key: String.
+         Key of the sentence in the general events dictionary.
+
+    Username: String.
+              Geonames username.
+
+    """
     sub_event_dict = {key: {}}
     #Tokenize the words
     toks = nk.word_tokenize(sent)
@@ -226,11 +256,11 @@ def parse(event_dict, input_chunker, username, process2=False):
     Function that calls the `parse_sent` function in parallel. Helper
     function to make calling the necessary functions cleaner.
 
-
-    Inputs
+    Parameters
     ------
 
-    event_dict : dictionary containing the sentences to be parsed. Assumes
+    event_dict : Dictionary.
+                 Dictionary containing the sentences to be parsed. Assumes
                  each event has a unique identifier as the key.
 
     input_chunker : trained NLTK chunker.

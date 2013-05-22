@@ -1,0 +1,235 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>preprocess &mdash; PETRARCH .01 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '.01',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="PETRARCH .01 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">PETRARCH .01 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for preprocess</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">geonames_api</span>
+<span class="kn">import</span> <span class="nn">nltk</span> <span class="kn">as</span> <span class="nn">nk</span>
+
+
+<div class="viewcode-block" id="Process"><a class="viewcode-back" href="../preprocess.html#preprocess.Process">[docs]</a><span class="k">class</span> <span class="nc">Process</span><span class="p">():</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sent</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trigrams</span> <span class="o">=</span> <span class="n">nk</span><span class="o">.</span><span class="n">trigrams</span><span class="p">(</span><span class="n">sent</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Process.geolocate"><a class="viewcode-back" href="../preprocess.html#preprocess.Process.geolocate">[docs]</a>    <span class="k">def</span> <span class="nf">geolocate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Function to pull location information from a sentence. The location</span>
+<span class="sd">        is then passed to the `geonames_api` to obtain latitude and</span>
+<span class="sd">        longitudes for each event.</span>
+
+<span class="sd">        Inputs</span>
+<span class="sd">        ------</span>
+<span class="sd">        username : username for geonames.org. String.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        lat : latitude coordinate</span>
+
+<span class="sd">        lon : longitude coordinate</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c">#TODO: What about two word cities? Baton Rouge, New Orleans, etc.</span>
+
+        <span class="c">#Create bigrams</span>
+        <span class="n">loc</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="c">#Words that indicate a location</span>
+        <span class="n">keep</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;in&#39;</span><span class="p">,</span> <span class="s">&#39;to&#39;</span><span class="p">,</span> <span class="s">&#39;from&#39;</span><span class="p">]</span>
+        <span class="c">#Select words from the bigram where the first word is &#39;to&#39; or &#39;in&#39;</span>
+        <span class="c">#and the second word has a proper noun tag.</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">w1</span><span class="p">,</span> <span class="n">t1</span><span class="p">),</span> <span class="p">(</span><span class="n">w2</span><span class="p">,</span> <span class="n">t2</span><span class="p">),</span> <span class="p">(</span><span class="n">w3</span><span class="p">,</span> <span class="n">t3</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">trigrams</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">w1</span> <span class="ow">in</span> <span class="n">keep</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">t2</span> <span class="o">==</span> <span class="s">&#39;NNP&#39;</span><span class="p">):</span>
+                <span class="n">loc</span> <span class="o">=</span> <span class="n">w2</span>
+            <span class="k">elif</span> <span class="p">(</span><span class="n">t1</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;N&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">w2</span> <span class="ow">in</span> <span class="n">keep</span> <span class="ow">and</span> <span class="n">t3</span> <span class="o">==</span> <span class="s">&#39;NNP&#39;</span><span class="p">):</span>
+                <span class="n">loc</span> <span class="o">=</span> <span class="n">w3</span>
+        <span class="c">#If it found a location</span>
+        <span class="k">if</span> <span class="n">loc</span><span class="p">:</span>
+            <span class="c">#Create parameters to pass to the geonames_api</span>
+            <span class="n">loc</span> <span class="o">=</span> <span class="n">nk</span><span class="o">.</span><span class="n">stem</span><span class="o">.</span><span class="n">PorterStemmer</span><span class="p">()</span><span class="o">.</span><span class="n">stem</span><span class="p">(</span><span class="n">loc</span><span class="p">)</span>
+            <span class="n">params</span> <span class="o">=</span> <span class="n">geonames_api</span><span class="o">.</span><span class="n">make_params</span><span class="p">({</span><span class="s">&#39;q&#39;</span><span class="p">:</span> <span class="n">loc</span><span class="p">})</span>
+            <span class="c">#Try to obtain coordinates from geonames</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span> <span class="o">=</span> <span class="n">geonames_api</span><span class="o">.</span><span class="n">get_lat_lon</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">username</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span>
+            <span class="c">#but if something went wrong, return &#39;NA&#39; for lat, lon</span>
+            <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+                <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span> <span class="o">=</span> <span class="s">&#39;NA&#39;</span><span class="p">,</span> <span class="s">&#39;NA&#39;</span>
+                <span class="k">return</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span>
+        <span class="c">#If a location hasn&#39;t been found, return &#39;NA&#39; for lat, lon</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">loc</span><span class="p">:</span>
+            <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span> <span class="o">=</span> <span class="s">&#39;NA&#39;</span><span class="p">,</span> <span class="s">&#39;NA&#39;</span>
+            <span class="k">return</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span>
+</div>
+    <span class="k">def</span> <span class="nf">_english_to_digit</span><span class="p">(</span><span class="n">textnum</span><span class="p">,</span> <span class="n">numwords</span><span class="o">=</span><span class="p">{}):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Private function to convert written numbers to digits. Copy-pasta from</span>
+<span class="sd">        http://stackoverflow.com/questions/493174/is-there-a-way-to-convert- \</span>
+<span class="sd">        number-words-to-integers-python</span>
+
+<span class="sd">        Inputs</span>
+<span class="sd">        ------</span>
+
+<span class="sd">        textnum : number written as text. String.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        out : number represented as a digit. String.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">numwords</span><span class="p">:</span>
+            <span class="n">units</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="s">&quot;zero&quot;</span><span class="p">,</span> <span class="s">&quot;one&quot;</span><span class="p">,</span> <span class="s">&quot;two&quot;</span><span class="p">,</span> <span class="s">&quot;three&quot;</span><span class="p">,</span> <span class="s">&quot;four&quot;</span><span class="p">,</span> <span class="s">&quot;five&quot;</span><span class="p">,</span> <span class="s">&quot;six&quot;</span><span class="p">,</span> <span class="s">&quot;seven&quot;</span><span class="p">,</span>
+                <span class="s">&quot;eight&quot;</span><span class="p">,</span> <span class="s">&quot;nine&quot;</span><span class="p">,</span> <span class="s">&quot;ten&quot;</span><span class="p">,</span> <span class="s">&quot;eleven&quot;</span><span class="p">,</span> <span class="s">&quot;twelve&quot;</span><span class="p">,</span> <span class="s">&quot;thirteen&quot;</span><span class="p">,</span>
+                <span class="s">&quot;fourteen&quot;</span><span class="p">,</span> <span class="s">&quot;fifteen&quot;</span><span class="p">,</span> <span class="s">&quot;sixteen&quot;</span><span class="p">,</span> <span class="s">&quot;seventeen&quot;</span><span class="p">,</span> <span class="s">&quot;eighteen&quot;</span><span class="p">,</span>
+                <span class="s">&quot;nineteen&quot;</span><span class="p">]</span>
+
+            <span class="n">tens</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;&quot;</span><span class="p">,</span> <span class="s">&quot;&quot;</span><span class="p">,</span> <span class="s">&quot;twenty&quot;</span><span class="p">,</span> <span class="s">&quot;thirty&quot;</span><span class="p">,</span> <span class="s">&quot;forty&quot;</span><span class="p">,</span> <span class="s">&quot;fifty&quot;</span><span class="p">,</span> <span class="s">&quot;sixty&quot;</span><span class="p">,</span>
+                    <span class="s">&quot;seventy&quot;</span><span class="p">,</span> <span class="s">&quot;eighty&quot;</span><span class="p">,</span> <span class="s">&quot;ninety&quot;</span><span class="p">]</span>
+
+            <span class="n">scales</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;hundred&quot;</span><span class="p">,</span> <span class="s">&quot;thousand&quot;</span><span class="p">,</span> <span class="s">&quot;million&quot;</span><span class="p">,</span> <span class="s">&quot;billion&quot;</span><span class="p">,</span> <span class="s">&quot;trillion&quot;</span><span class="p">]</span>
+
+            <span class="n">numwords</span><span class="p">[</span><span class="s">&quot;and&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">word</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">units</span><span class="p">):</span>
+                <span class="n">numwords</span><span class="p">[</span><span class="n">word</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">word</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tens</span><span class="p">):</span>
+                <span class="n">numwords</span><span class="p">[</span><span class="n">word</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">idx</span> <span class="o">*</span> <span class="mi">10</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">word</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">scales</span><span class="p">):</span>
+                <span class="n">numwords</span><span class="p">[</span><span class="n">word</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="n">idx</span> <span class="o">*</span> <span class="mi">3</span> <span class="ow">or</span> <span class="mi">2</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="n">current</span> <span class="o">=</span> <span class="n">result</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">textnum</span><span class="o">.</span><span class="n">split</span><span class="p">():</span>
+            <span class="n">word</span> <span class="o">=</span> <span class="nb">str</span><span class="o">.</span><span class="n">lower</span><span class="p">(</span><span class="n">word</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">word</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">numwords</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;Illegal word: &quot;</span> <span class="o">+</span> <span class="n">word</span><span class="p">)</span>
+
+            <span class="n">scale</span><span class="p">,</span> <span class="n">increment</span> <span class="o">=</span> <span class="n">numwords</span><span class="p">[</span><span class="n">word</span><span class="p">]</span>
+            <span class="n">current</span> <span class="o">=</span> <span class="n">current</span> <span class="o">*</span> <span class="n">scale</span> <span class="o">+</span> <span class="n">increment</span>
+            <span class="k">if</span> <span class="n">scale</span> <span class="o">&gt;</span> <span class="mi">100</span><span class="p">:</span>
+                <span class="n">result</span> <span class="o">+=</span> <span class="n">current</span>
+                <span class="n">current</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="n">out</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">result</span> <span class="o">+</span> <span class="n">current</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span>
+
+<div class="viewcode-block" id="Process.num_involved"><a class="viewcode-back" href="../preprocess.html#preprocess.Process.num_involved">[docs]</a>    <span class="k">def</span> <span class="nf">num_involved</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Function to obtain information regarding the number of individuals</span>
+<span class="sd">        involved in a given event.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        number : number of people involved in an event. Integer.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c">#Create trigrams</span>
+        <span class="n">number</span> <span class="o">=</span> <span class="nb">str</span><span class="p">()</span>
+        <span class="c">#Select words with cardinal number POS tags that are preceded or</span>
+        <span class="c">#followed by verbs. This attemps to capture things such as &#39;15 were</span>
+        <span class="c">#killed&#39; or &#39;15 killed&#39; or &#39;killed 15&#39;.</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">w1</span><span class="p">,</span> <span class="n">t1</span><span class="p">),</span> <span class="p">(</span><span class="n">w2</span><span class="p">,</span> <span class="n">t2</span><span class="p">),</span> <span class="p">(</span><span class="n">w3</span><span class="p">,</span> <span class="n">t3</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">trigrams</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">t1</span> <span class="o">==</span> <span class="s">&#39;CD&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">t3</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;V&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">t2</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;V&#39;</span><span class="p">)):</span>
+                <span class="n">number</span> <span class="o">=</span> <span class="n">w1</span>
+            <span class="k">elif</span> <span class="p">((</span><span class="n">t1</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;V&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">t2</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;V&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">t2</span> <span class="o">==</span> <span class="s">&#39;CD&#39;</span><span class="p">))</span>
+                  <span class="ow">and</span> <span class="p">(</span><span class="n">t3</span> <span class="o">==</span> <span class="s">&#39;CD&#39;</span><span class="p">)):</span>
+                <span class="n">number</span> <span class="o">=</span> <span class="n">w3</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">number</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_english_to_digit</span><span class="p">(</span><span class="n">number</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">return</span> <span class="n">number</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">PETRARCH .01 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Phil.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>
