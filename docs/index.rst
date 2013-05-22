@@ -11,9 +11,9 @@ Contents:
 .. toctree::
    :maxdepth: 4
 
-   geonames_api
-   petrarch
-   preprocess
+   About
+   Tutorial
+   Modules
 
 
 Indices and tables

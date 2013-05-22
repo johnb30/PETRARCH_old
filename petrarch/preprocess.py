@@ -12,16 +12,19 @@ class Process():
         is then passed to the `geonames_api` to obtain latitude and
         longitudes for each event.
 
-        Inputs
+        Parameters
         ------
-        username : username for geonames.org. String.
+        username: String.
+                  Username for geonames.org.
 
         Returns
         -------
 
-        lat : latitude coordinate
+        lat: String.
+             latitude coordinate
 
-        lon : longitude coordinate
+        lon: String.
+             longitude coordinate
 
         """
         #TODO: What about two word cities? Baton Rouge, New Orleans, etc.
@@ -61,15 +64,17 @@ class Process():
         http://stackoverflow.com/questions/493174/is-there-a-way-to-convert- \
         number-words-to-integers-python
 
-        Inputs
+        Parameters
         ------
 
-        textnum : number written as text. String.
+        textnum: String.
+                 Number written as text.
 
         Returns
         -------
 
-        out : number represented as a digit. String.
+        out: String.
+             Number represented as a digit.
 
         """
 
@@ -116,7 +121,8 @@ class Process():
         Returns
         -------
 
-        number : number of people involved in an event. Integer.
+        number: Integer.
+                Number of people involved in an event.
 
         """
         #Create trigrams

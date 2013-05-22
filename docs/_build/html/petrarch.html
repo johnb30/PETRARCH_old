@@ -24,6 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="PETRARCH .01 documentation" href="index.html" />
+    <link rel="up" title="Modules Documentation" href="Modules.html" />
     <link rel="next" title="preprocess Module" href="preprocess.html" />
     <link rel="prev" title="geonames_api Module" href="geonames_api.html" /> 
   </head>
@@ -46,7 +47,8 @@
         <li class="right" >
           <a href="geonames_api.html" title="geonames_api Module"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">PETRARCH .01 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PETRARCH .01 documentation</a> &raquo;</li>
+          <li><a href="Modules.html" accesskey="U">Modules Documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -68,15 +70,17 @@ sentences.</p>
 <dt id="petrarch.TagChunker.parse">
 <tt class="descname">parse</tt><big>(</big><em>tokens</em><big>)</big><a class="reference internal" href="_modules/petrarch.html#TagChunker.parse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#petrarch.TagChunker.parse" title="Permalink to this definition">¶</a></dt>
 <dd><p>Function to chunk a POS-tagged sentence using a trained chunker.</p>
-<dl class="docutils">
-<dt>tokens <span class="classifier-delimiter">:</span> <span class="classifier">List.</span></dt>
-<dd>POS-tagged sentence.</dd>
-</dl>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>chunked</strong> : NLTK tree object.</p>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>tokens: List.</strong> :</p>
+<blockquote>
+<div><p>POS-tagged sentence.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>chunked: NLTK tree object.</strong> :</p>
 <blockquote class="last">
 <div><p>Chunked sentence in NLTK tree form.</p>
 </div></blockquote>
@@ -113,11 +117,11 @@ trigrams.</p>
 <dd><p>Function that calls the <cite>parse_sent</cite> function in parallel. Helper
 function to make calling the necessary functions cleaner.</p>
 <dl class="docutils">
-<dt>event_dict <span class="classifier-delimiter">:</span> <span class="classifier">Dictionary.</span></dt>
+<dt>event_dict: Dictionary.</dt>
 <dd>Dictionary containing the sentences to be parsed. Assumes
 each event has a unique identifier as the key.</dd>
 </dl>
-<p>input_chunker : trained NLTK chunker.</p>
+<p>input_chunker: trained NLTK chunker.</p>
 </dd></dl>
 
 <dl class="function">
@@ -125,19 +129,23 @@ each event has a unique identifier as the key.</dd>
 <tt class="descclassname">petrarch.</tt><tt class="descname">parse_sent</tt><big>(</big><em>sent</em>, <em>key</em>, <em>input_chunker</em><big>)</big><a class="reference internal" href="_modules/petrarch.html#parse_sent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#petrarch.parse_sent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Function to parse a given sentence. Tokenizes, POS tags, and chunks a
 given sentence, along with extracting noun and verb phrases.</p>
-<dl class="docutils">
-<dt>sent <span class="classifier-delimiter">:</span> <span class="classifier">String.</span></dt>
-<dd>Sentence to be parsed.</dd>
-<dt>key <span class="classifier-delimiter">:</span> <span class="classifier">String.</span></dt>
-<dd>Key of the event used to access the event from the events
-dictionary.</dd>
-</dl>
-<p>input_chunker : trained NLTK chunker.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>sub_event_dict</strong> : Dictionary.</p>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>sent: String.</strong> :</p>
+<blockquote>
+<div><p>Sentence to be parsed.</p>
+</div></blockquote>
+<p><strong>key: String.</strong> :</p>
+<blockquote>
+<div><p>Key of the event used to access the event from the events
+dictionary.</p>
+</div></blockquote>
+<p><strong>input_chunker: trained NLTK chunker.</strong> :</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>sub_event_dict: Dictionary.</strong> :</p>
 <blockquote class="last">
 <div><p>Container for  the POS-tagged sentence, chunked
 sentence, noun phrases, and verb phrases for each event 
@@ -154,14 +162,26 @@ in the input file.</p>
 <tt class="descclassname">petrarch.</tt><tt class="descname">post_process</tt><big>(</big><em>sent</em>, <em>key</em>, <em>username</em><big>)</big><a class="reference internal" href="_modules/petrarch.html#post_process"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#petrarch.post_process" title="Permalink to this definition">¶</a></dt>
 <dd><p>Helper function to call the various post-processing functions, e.g. 
 geolocation and feature extraction.</p>
-<dl class="docutils">
-<dt>sent: String.</dt>
-<dd>Sentence to parse.</dd>
-<dt>key: String.</dt>
-<dd>Key of the sentence in the general events dictionary.</dd>
-<dt>Username: String.</dt>
-<dd>Geonames username.</dd>
-</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>sent: String.</strong> :</p>
+<blockquote>
+<div><p>Sentence to parse.</p>
+</div></blockquote>
+<p><strong>key: String.</strong> :</p>
+<blockquote>
+<div><p>Key of the sentence in the general events dictionary.</p>
+</div></blockquote>
+<p><strong>Username: String.</strong> :</p>
+<blockquote class="last">
+<div><p>Geonames username.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
@@ -170,10 +190,18 @@ geolocation and feature extraction.</p>
 <dd><p>Function to read in a file of news stories. Expects stories formatted
 in the traditional TABARI format. Adds each sentence, along with the
 meta data, to a dictionary.</p>
-<dl class="docutils">
-<dt>filepath <span class="classifier-delimiter">:</span> <span class="classifier">String.</span></dt>
-<dd>filepath of the file containing the sentence to be parsed.</dd>
-</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>filepath: String.</strong> :</p>
+<blockquote class="last">
+<div><p>Filepath of the file containing the sentence to be parsed.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </div>
@@ -230,7 +258,8 @@ meta data, to a dictionary.</p>
         <li class="right" >
           <a href="geonames_api.html" title="geonames_api Module"
              >previous</a> |</li>
-        <li><a href="index.html">PETRARCH .01 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PETRARCH .01 documentation</a> &raquo;</li>
+          <li><a href="Modules.html" >Modules Documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

@@ -52,16 +52,16 @@ class TagChunker(nk.chunk.ChunkParserI):
         Function to chunk a POS-tagged sentence using a trained chunker.
 
         Parameters
-        ------
+        ----------
 
-        tokens : List.
-                 POS-tagged sentence.
+        tokens: List.
+                POS-tagged sentence.
 
         Returns
         -------
 
-        chunked : NLTK tree object.
-                  Chunked sentence in NLTK tree form.
+        chunked: NLTK tree object.
+                 Chunked sentence in NLTK tree form.
 
         """
         # split words and part of speech tags
@@ -85,10 +85,10 @@ def read_data(filepath):
     meta data, to a dictionary.
 
     Parameters
-    -----
+    ----------
 
-    filepath : String.
-               filepath of the file containing the sentence to be parsed.
+    filepath: String.
+              Filepath of the file containing the sentence to be parsed.
 
     """
     event_dict = dict()
@@ -115,16 +115,16 @@ def _get_np(tree):
     sentence.
 
     Parameters
-    ------
+    ----------
 
-    tree : NLTK tree object.
-           Parse tree for a particular sentence.
+    tree: NLTK tree object.
+          Parse tree for a particular sentence.
 
     Returns
     -------
 
-    noun_phrases :  List.
-                    Noun phrases within a sentence.
+    noun_phrases: List.
+                  Noun phrases within a sentence.
     """
     noun_phrases = []
     for sub in tree.subtrees(filter=lambda x: x.node == 'NP'):
@@ -143,18 +143,18 @@ def _get_vp(tree):
     sentence.
 
     Parameters
-    ------
+    ----------
 
-    tree : NLTK tree object.
-           Parse tree for a particular sentence.
+    tree: NLTK tree object.
+          Parse tree for a particular sentence.
 
     Returns
     -------
 
-    verb_phrases : List of tuples.
-                   Collection of verb phrases in a sentence. The tuples are 
-                   of the form (verb, noun phrase), where the
-                   noun phrase is one that immediately follows the verb.
+    verb_phrases: List of tuples.
+                  Collection of verb phrases in a sentence. The tuples are 
+                  of the form (verb, noun phrase), where the
+                  noun phrase is one that immediately follows the verb.
 
     """
     verb_phrases = []
@@ -177,24 +177,24 @@ def parse_sent(sent, key, input_chunker):
     given sentence, along with extracting noun and verb phrases.
 
     Parameters
-    ------
+    ----------
 
-    sent : String.
-           Sentence to be parsed.
+    sent: String.
+          Sentence to be parsed.
 
-    key : String.
-          Key of the event used to access the event from the events
-          dictionary.
+    key: String.
+         Key of the event used to access the event from the events
+         dictionary.
 
-    input_chunker : trained NLTK chunker.
+    input_chunker: trained NLTK chunker.
 
     Returns
     -------
 
-    sub_event_dict : Dictionary.
-                     Container for  the POS-tagged sentence, chunked
-                     sentence, noun phrases, and verb phrases for each event 
-                     in the input file.
+    sub_event_dict: Dictionary.
+                    Container for  the POS-tagged sentence, chunked
+                    sentence, noun phrases, and verb phrases for each event 
+                    in the input file.
 
     """
     sub_event_dict = {key: {}}
@@ -224,7 +224,7 @@ def post_process(sent, key, username):
     geolocation and feature extraction.
 
     Parameters
-    ------
+    ----------
 
     sent: String.
           Sentence to parse.
@@ -259,11 +259,11 @@ def parse(event_dict, input_chunker, username, process2=False):
     Parameters
     ------
 
-    event_dict : Dictionary.
-                 Dictionary containing the sentences to be parsed. Assumes
-                 each event has a unique identifier as the key.
+    event_dict: Dictionary.
+                Dictionary containing the sentences to be parsed. Assumes
+                each event has a unique identifier as the key.
 
-    input_chunker : trained NLTK chunker.
+    input_chunker: trained NLTK chunker.
 
     Note
     ----
