@@ -293,6 +293,7 @@ def parse(event_dict, input_chunker, username, process2=False):
 
 
 def parse_cli_args():
+    """Function to parse the command-line arguments for PETRARCH."""
     __description__ = """
 PETRARCH
 (eventdata.psu.edu) (v. 0.01)
