@@ -19,6 +19,7 @@ def make_params(params_dict):
     return params
 
 
+#Pulled from https://github.com/gregrobbins/geonames-python
 def fetch_JSON(params, username):
     """
     Function to search geonames for a given parameter.
