@@ -22,7 +22,7 @@ def create_chunkers():
     Returns
     -------
 
-    ubt_chunker : NLTK chunker. 
+    ubt_chunker : NLTK chunker.
                   NLTK trained chunker trained using unigrams, bigrams, and
                   trigrams.
     """
@@ -42,7 +42,7 @@ def create_chunkers():
 
 
 class TagChunker(nk.chunk.ChunkParserI):
-    """Class used to create a chunker for use in parsing POS-tagged 
+    """Class used to create a chunker for use in parsing POS-tagged
     sentences."""
     def __init__(self, chunk_tagger):
         self._chunk_tagger = chunk_tagger
@@ -152,7 +152,7 @@ def _get_vp(tree):
     -------
 
     verb_phrases: List of tuples.
-                  Collection of verb phrases in a sentence. The tuples are 
+                  Collection of verb phrases in a sentence. The tuples are
                   of the form (verb, noun phrase), where the
                   noun phrase is one that immediately follows the verb.
 
@@ -193,7 +193,7 @@ def parse_sent(sent, key, input_chunker):
 
     sub_event_dict: Dictionary.
                     Container for  the POS-tagged sentence, chunked
-                    sentence, noun phrases, and verb phrases for each event 
+                    sentence, noun phrases, and verb phrases for each event
                     in the input file.
 
     """
@@ -220,7 +220,7 @@ def parse_sent(sent, key, input_chunker):
 
 def post_process(sent, key, username):
     """
-    Helper function to call the various post-processing functions, e.g. 
+    Helper function to call the various post-processing functions, e.g.
     geolocation and feature extraction.
 
     Parameters
@@ -291,38 +291,60 @@ def parse(event_dict, input_chunker, username, process2=False):
             key = post_parsed_sent.keys()[0]
             event_dict[key].update(post_parsed_sent[key])
 
-if __name__ == '__main__':
-    print 'Reading in data...'
-    defaults = argparse.ArgumentParser()
-    defaults.add_argument('-i', '--inputs',
-                          help='File, or directory of files, to parse.', 
-                          default=None)
-    defaults.add_argument('-o', '--output', help='File to write parsed events',
-                          default=None)
-    defaults.add_argument('-u', '--username', help="geonames.org username",
-                          default=None)
-    defaults.add_argument('-p', '--postprocess', help="""Whether post 
-                          processing, such as geolocation and feature 
-                          extraction, should occur. Default False.""",
-                          default=False, action='store_true')
+
+def parse_cli_args():
+    __description__ = """
+PETRARCH
+(eventdata.psu.edu) (v. 0.01)
+    """
+    aparse = argparse.ArgumentParser(prog='PETRARCH',
+                                     description=__description__)
+
+    sub_parse = aparse.add_subparsers(dest='command_name')
+    parse_command = sub_parse.add_parser('parse', help="""Command to run the
+                                         PETRARCH parser.""",
+                                         description="""Command to run the
+                                         PETRARCH parser.""")
+    parse_command.add_argument('-i', '--inputs',
+                               help='File, or directory of files, to parse.',
+                               default=None)
+    parse_command.add_argument('-o', '--output',
+                               help='File to write parsed events',
+                               default=None)
+    parse_command.add_argument('-u', '--username',
+                               help="geonames.org username", default=None)
+    parse_command.add_argument('-P', '--postprocess', help="""Whether post
+                               processing, such as geolocation and feature
+                               extraction, should occur. Default False.""",
+                               default=False, action='store_true')
 #These will be used as the program develops further.
-#    defaults.add_argument('-g', '--geolocate', action='store_true',
+#    parse_command.add_argument('-g', '--geolocate', action='store_true',
 #                          default=False, help="""Whether to geolocate events.
-#                          Defaults to False""")
-#    defaults.add_argument('-f', '--features', action='store_true',
+#                          parse_command to False""")
+#    parse_command.add_argument('-f', '--features', action='store_true',
 #                          default=False,
 #                          help="""Whether to extract features from sentence.
-#                          Defaults to False""")
-    defaults.add_argument('-n', '--n_cores', type=int, default=-1,
-                          help="""Number of cores to use for parallel
-                          processing. Defaults to -1 for all cores""")
-    args = defaults.parse_args()
-    inputs = args.inputs
-    out_path = args.output
-    username = args.username
-    post_proc = args.postprocess
+#                          parse_command to False""")
+    parse_command.add_argument('-n', '--n_cores', type=int, default=-1,
+                               help="""Number of cores to use for parallel
+                               processing. parse_command to -1 for all
+                               cores""")
 
-    ubt_chunker = create_chunkers() 
+    temp_command = sub_parse.add_parser('temp', help="""Placeholder.""",
+                                        description="""Placeholder.""")
+    args = aparse.parse_args()
+    return args
+
+if __name__ == '__main__':
+    cli_args = parse_cli_args()
+    cli_command = cli_args.command_name
+    inputs = cli_args.inputs
+    out_path = cli_args.output
+    username = cli_args.username
+    post_proc = cli_args.postprocess
+
+    print 'Reading in data...'
+    ubt_chunker = create_chunkers()
     print 'Parsing sentences...'
     events = read_data(inputs)
     parse(events, ubt_chunker, username, post_proc)
