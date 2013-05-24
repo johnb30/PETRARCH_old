@@ -17,7 +17,7 @@ command: parse
 
 The command as of now should look (something) like:
 
-    python petrarch.py parse -i SENTENCE_FILE -u USERNAME -p
+    python petrarch.py parse -i SENTENCE_FILE -u USERNAME -P
 
 ##NOTE
 
