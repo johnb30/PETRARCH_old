@@ -187,6 +187,8 @@ def _get_vp(tree):
     return verb_phrases
 
 
+#Chunker code pulled from
+#http://streamhacker.wordpress.com/2009/02/23/chunk-extraction-with-nltk/
 class TagChunker(nk.chunk.ChunkParserI):
     """Class used to create a chunker for use in parsing POS-tagged
     sentences."""
