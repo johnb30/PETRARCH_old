@@ -18,3 +18,9 @@ command: parse
 The command as of now should look (something) like:
 
     python petrarch.py parse -i SENTENCE_FILE -u USERNAME -p
+
+##NOTE
+
+The setup.py file is currently experimental and is in no way, shape, or form
+guaranteed to actually install the program in a proper manner. There's also
+no clear reason to install the program at this point.
