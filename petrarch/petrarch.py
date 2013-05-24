@@ -1,43 +1,6 @@
-import nltk as nk
 import parse
 import argparse
-from joblib import Parallel, delayed
-
-#Chunker code pulled from
-#http://streamhacker.wordpress.com/2009/02/23/chunk-extraction-with-nltk/
-
-
-def _conll_tag_chunks(chunk_sents):
-    """Private function to prepare the training data for the NLTK chunker"""
-    #Parse the training data for the chunker
-    tag_sents = [nk.chunk.tree2conlltags(tree) for tree in chunk_sents]
-    return [[(t, c) for (w, t, c) in chunk_tags] for chunk_tags in tag_sents]
-
-
-def create_chunkers():
-    """
-    Function to create and train a chunker used to POS-tagged sentences.
-
-    Returns
-    -------
-
-    ubt_chunker : NLTK chunker.
-                  NLTK trained chunker trained using unigrams, bigrams, and
-                  trigrams.
-    """
-    #Get training data for chunker
-    #Alternate between penn treebank and conll2000 to see which gets better
-    #results
-    #train_sents = nk.corpus.treebank_chunk.chunked_sents()
-    train_sents = nk.corpus.conll2000.chunked_sents('train.txt')
-    train_chunks = _conll_tag_chunks(train_sents)
-
-    #Training the chunker
-    u_chunker = nk.tag.UnigramTagger(train_chunks)
-    ub_chunker = nk.tag.BigramTagger(train_chunks, backoff=u_chunker)
-    ubt_chunker = nk.tag.TrigramTagger(train_chunks, backoff=ub_chunker)
-
-    return ubt_chunker
+import pickle
 
 
 def read_data(filepath):
@@ -126,7 +89,7 @@ def main():
     post_proc = cli_args.postprocess
     if cli_command == 'parse':
         print 'Reading in data...'
-        ubt_chunker = create_chunkers()
+        ubt_chunker = pickle.load(open('ubt_chunker_trained.pickle'))
         print 'Parsing sentences...'
         events = read_data(inputs)
         parse.parse(events, ubt_chunker, username, post_proc)
