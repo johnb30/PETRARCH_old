@@ -1,7 +1,11 @@
 import parse
 import argparse
 import pickle
+import os
 
+def get_chunker(path):
+    _ROOT = os.path.abspath(os.path.dirname(__file__))
+    return os.path.join(_ROOT, 'data', path)
 
 def read_data(filepath):
     """
@@ -89,7 +93,8 @@ def main():
     post_proc = cli_args.postprocess
     if cli_command == 'parse':
         print 'Reading in data...'
-        ubt_chunker = pickle.load(open('ubt_chunker_trained.pickle'))
+        chunk = get_chunker('ubt_chunker_trained.pickle')
+        ubt_chunker = pickle.load(open(chunk))
         print 'Parsing sentences...'
         events = read_data(inputs)
         parse.parse(events, ubt_chunker, username, post_proc)
