@@ -89,7 +89,7 @@ def main():
     post_proc = cli_args.postprocess
     if cli_command == 'parse':
         print 'Reading in data...'
-        ubt_chunker = pickle.load(open('ubt_chunker_trained.pickle'))
+        ubt_chunker = pickle.load(open('./ubt_chunker_trained.pickle'))
         print 'Parsing sentences...'
         events = read_data(inputs)
         parse.parse(events, ubt_chunker, username, post_proc)
