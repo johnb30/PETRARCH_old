@@ -1,7 +1,7 @@
 PETRARCH
 ========
 
-Repository for the devlopment of the Python-language successor to the TABARAI
+Repository for the development of the Python-language successor to the TABARAI
 event-data coding program. 
 
 ###Current Usage
@@ -21,6 +21,10 @@ The command as of now should look (something) like:
 
 ##NOTE
 
-The setup.py file is currently experimental and is in no way, shape, or form
-guaranteed to actually install the program in a proper manner. There's also
-no clear reason to install the program at this point.
+The setup.py file seems to work now. Since this software is in sub-alpha 
+development installing the program probably isn't the best idea. If you do
+install it, the use of a temporary virtual environment is advisable. Once
+installed, it should be possible to run the program using the following
+command:
+
+    petrarch parse -i SENTENCE_FILE -u USERNAME -P
