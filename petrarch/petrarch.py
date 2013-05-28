@@ -27,11 +27,10 @@ def read_data(filepath):
         #Strings are weird, so split into meta string, which contains meta
         #info and story part of the string
         meta_string = sentence[:sentence.find('\n')]
-        day, ident, ident_long = meta_string.split(' ')
+        day, ident = meta_string.split()[:2]
         story_string = sentence[sentence.find('\n'):].replace('\n', '')
         #Combine info into a dictionary
-        story_info = {'day': day, 'id': ident, 'id_long': ident_long,
-                      'story': story_string}
+        story_info = {'day': day, 'id': ident, 'story': story_string}
         #Add the new dict to the events dict with the ID as the key
         event_dict[ident] = story_info
 
