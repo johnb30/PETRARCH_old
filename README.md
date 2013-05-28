@@ -21,6 +21,11 @@ The command as of now should look (something) like:
 
     python petrarch.py parse -i SENTENCE_FILE -u USERNAME -P
 
+####Tests
+
+To run the (single) test, just navigate to the toplevel of the directory
+and run `nosetests`. 
+
 ##NOTE
 
 The setup.py file seems to work now. Since this software is in sub-alpha 
