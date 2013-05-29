@@ -12,8 +12,10 @@ def test_main():
     chunker = petrarch._get_chunker('ubt_chunker_trained.pickle')
     ubt_chunker = pickle.load(open(chunker))
     events = petrarch.read_data(test_sent)
-    username = None
-    parse.parse(events, ubt_chunker, username)
+    for key in events:
+        sent = events[key]['story']
+        update = parse.parse_sent(sent, key, ubt_chunker)
+        events[key].update(update[key])
     output = ""
     for event in events:
         output += '=======================\n\n'
