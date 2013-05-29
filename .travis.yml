@@ -11,5 +11,4 @@ before_install:
 install:
   - pip install PyYAML joblib nltk simplejson --use-mirrors
 script: 
-  - python tests/setup_reqs.py
   - nosetests
