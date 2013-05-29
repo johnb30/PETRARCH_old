@@ -8,7 +8,7 @@ def test_main():
     test_sent = os.path.join(cwd, 'test_files', 'test_sentences.txt')
     test_output = open(os.path.join(cwd, 'test_files', 'test_output.txt')).read()
     test_output = test_output.replace('\n', '')
-    chunker = petrarch.get_chunker('ubt_chunker_trained.pickle')
+    chunker = petrarch._get_chunker('ubt_chunker_trained.pickle')
     ubt_chunker = pickle.load(open(chunker))
     events = petrarch.read_data(test_sent)
     username = None
