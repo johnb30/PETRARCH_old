@@ -3,7 +3,7 @@ PETRARCH
 
 [![Build Status](https://travis-ci.org/eventdata/PETRARCH.png?branch=master)](https://travis-ci.org/eventdata/PETRARCH)
 
-Repository for the development of the Python-language successor to the TABARAI
+Repository for the development of the Python-language successor to the TABARI
 event-data coding program. 
 
 ###Current Usage

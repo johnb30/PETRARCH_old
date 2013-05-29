@@ -105,7 +105,7 @@ def main():
     out_path = cli_args.output
     username = cli_args.username
     post_proc = cli_args.postprocess
-
+    _check_reqs()
     if cli_command == 'parse':
         print 'Reading in data...'
         chunk = get_chunker('ubt_chunker_trained.pickle')
