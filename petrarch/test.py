@@ -1,41 +1,45 @@
-import os
 import petrarch
 import parse
 import pickle
+from nltk.tree import Tree
 
 def test_main():
-    cwd = os.path.abspath(os.path.dirname(__file__))
-    test_sent = os.path.join(cwd, 'test_files', 'test_sentences.txt')
-    test_output = open(os.path.join(cwd, 'test_files', 'test_output.txt')).read()
-    test_output = test_output.replace('\n', '')
+    sent = """Arnor is about to restore full diplomatic ties with Gondor almost 
+              five years after crowds trashed its embassy, a senior official 
+              said on Saturday."""
+    key = 'DEMO-01'
     petrarch._check_reqs()
     chunker = petrarch._get_chunker('ubt_chunker_trained.pickle')
     ubt_chunker = pickle.load(open(chunker))
-    events = petrarch.read_data(test_sent)
-    for key in events:
-        sent = events[key]['story']
-        update = parse.parse_sent(sent, key, ubt_chunker)
-        events[key].update(update[key])
-    output = ""
-    for event in events:
-        output += '=======================\n\n'
-        output += 'event id: {}\n'.format(event)
-        output += 'POS tagged sent:\n {}\n\n'.format(events[event]['tagged'])
-        output += 'NP tagged sent:\n {}\n\n'.format(events[event]['sent_tree'])
-        output += 'Noun phrases: \n {}\n\n'.format(events[event]['noun_phrases'])
-        output += 'Verb phrases: \n {}\n\n'.format(events[event]['verb_phrases'])
-        try:
-            output += 'Geolocate: \n {}, {}\n\n'.format(events[event]['lat'],
-                                                    events[event]['lon'])
-        except KeyError:
-            pass
-        try:
-            output += 'Feature extract: \n {}\n\n'.format(events[event]['num_involved'])
-        except KeyError:
-            pass 
-    output = output.replace('\n', '')
+    update = parse.parse_sent(sent, key, ubt_chunker)
+    actual = {'DEMO-01': {'noun_phrases': ['Arnor', 
+              'restore full diplomatic ties',
+              'Gondor almost five years', 'crowds', 'its embassy',
+              'a senior official', 'Saturday'],
+              'sent_tree': Tree('S', [Tree('NP', [('Arnor', 'NNP')]), 
+              Tree('VP', [('is', 'VBZ')]), Tree('PP', [('about', 'IN')]), 
+              Tree('PP', [('to', 'TO')]), Tree('NP', [('restore', 'VB'), 
+                  ('full', 'JJ'), ('diplomatic', 'JJ'), ('ties', 'NNS')]), 
+              Tree('PP', [('with', 'IN')]), Tree('NP', [('Gondor', 'NNP'), 
+                  ('almost', 'RB'), ('five', 'CD'), ('years', 'NNS')]), 
+              Tree('PP', [('after', 'IN')]), Tree('NP', [('crowds', 'NNS')]), 
+              Tree('VP', [('trashed', 'VBD')]), Tree('NP', [('its', 'PRP$'),
+                  ('embassy', 'NN')]), (',', ','), Tree('NP', [('a', 'DT'),
+                      ('senior', 'JJ'), ('official', 'NN')]), 
+              Tree('VP', [('said', 'VBD')]), Tree('PP', [('on', 'IN')]), 
+              Tree('NP', [('Saturday', 'NNP')]), ('.', '.')]),
+              'tagged': [('Arnor', 'NNP'), ('is', 'VBZ'), ('about', 'IN'),
+                         ('to', 'TO'), ('restore', 'VB'), ('full', 'JJ'),
+                         ('diplomatic', 'JJ'), ('ties', 'NNS'), ('with', 'IN'),
+                         ('Gondor', 'NNP'), ('almost', 'RB'), ('five', 'CD'),
+                         ('years', 'NNS'), ('after', 'IN'), ('crowds', 'NNS'),
+                         ('trashed', 'VBD'), ('its', 'PRP$'), ('embassy', 'NN'),
+                         (',', ','), ('a', 'DT'), ('senior', 'JJ'),
+                         ('official', 'NN'), ('said', 'VBD'), ('on', 'IN'),
+                         ('Saturday', 'NNP'), ('.', '.')],
+              'verb_phrases': [('trashed', 'its embassy')]}}
 
-    assert test_output == output
+    assert update == actual
 
 if __name__ == '__main__':
     test_main()
