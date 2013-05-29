@@ -41,5 +41,12 @@ def test_main():
 
     assert update == actual
 
-if __name__ == '__main__':
+def test_stupid():
+    assert 2+2 == 4
+
+def main():
     test_main()
+    test_stupid()
+
+if __name__ == '__main__':
+    main()
