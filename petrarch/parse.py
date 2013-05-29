@@ -4,7 +4,7 @@ import itertools
 from joblib import Parallel, delayed
 
 
-def parse(event_dict, input_chunker, username, process2=False):
+def parse(event_dict, input_chunker, input_tagger, username, process2=False):
     """
     Function that calls the `parse_sent` function in parallel. Helper
     function to make calling the necessary functions cleaner.
@@ -26,7 +26,8 @@ def parse(event_dict, input_chunker, username, process2=False):
     """
     parsed = Parallel(n_jobs=-1)(delayed(parse_sent)
                                  (sent=event_dict[key]['story'], key=key,
-                                  input_chunker=input_chunker)
+                                  input_chunker=input_chunker,
+                                  input_tagger=input_tagger)
                                  for key in event_dict)
 
     for parsed_sent in parsed:
@@ -45,7 +46,7 @@ def parse(event_dict, input_chunker, username, process2=False):
             event_dict[key].update(post_parsed_sent[key])
 
 
-def parse_sent(sent, key, input_chunker):
+def parse_sent(sent, key, input_chunker, input_tagger):
     """
     Function to parse a given sentence. Tokenizes, POS tags, and chunks a
     given sentence, along with extracting noun and verb phrases.
@@ -75,7 +76,7 @@ def parse_sent(sent, key, input_chunker):
     #Tokenize the words
     toks = nk.word_tokenize(sent)
     #Part-of-speech tag the tokens
-    tags = nk.pos_tag(toks)
+    tags = input_tagger.tag(toks)
     tags = [tag for tag in tags if tag[1] != 'POS']
     chunker = TagChunker(input_chunker)
     #Use chunker to chunk the tagged words and combine into a tree

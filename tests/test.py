@@ -2,21 +2,17 @@ import petrarch.petrarch
 import petrarch.parse
 import pickle
 from nltk.tree import Tree
-import nltk as nk
 
 def test_main():
     sent = """Arnor is about to restore full diplomatic ties with Gondor almost 
               five years after crowds trashed its embassy, a senior official 
               said on Saturday."""
     key = 'DEMO-01'
-    try:
-        nk.data.load(nk.tag._POS_TAGGER)
-    except LookupError:
-        nk.download('maxent_treebank_pos_tagger')
-    #petrarch._check_reqs()
-    chunker = petrarch.petrarch._get_chunker('ubt_chunker_trained.pickle')
+    chunker = petrarch.petrarch._get_data('ubt_chunker_trained.pickle')
     ubt_chunker = pickle.load(open(chunker))
-    update = petrarch.parse.parse_sent(sent, key, ubt_chunker)
+    tag = petrarch.petrarch._get_data('maxent_treebank_pos_tagger.pickle')
+    pos_tagger = pickle.load(open(tag))
+    update = petrarch.parse.parse_sent(sent, key, ubt_chunker, pos_tagger)
     actual = {'DEMO-01': {'noun_phrases': ['Arnor', 
               'restore full diplomatic ties',
               'Gondor almost five years', 'crowds', 'its embassy',
@@ -45,6 +41,3 @@ def test_main():
               'verb_phrases': [('trashed', 'its embassy')]}}
 
     assert update == actual
-
-def test_stupid():
-    assert 2+2 == 4

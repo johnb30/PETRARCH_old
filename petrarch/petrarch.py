@@ -5,7 +5,7 @@ import nltk as nk
 import os
 
 
-def _get_chunker(path):
+def _get_data(path):
     """Private function to get the absolute path to the installed files."""
     cwd = os.path.abspath(os.path.dirname(__file__))
     return os.path.join(cwd, 'data', path)
@@ -108,11 +108,13 @@ def main():
     _check_reqs()
     if cli_command == 'parse':
         print 'Reading in data...'
-        chunk = get_chunker('ubt_chunker_trained.pickle')
+        chunk = _get_data('ubt_chunker_trained.pickle')
         ubt_chunker = pickle.load(open(chunk))
+        tag = _get_data('maxent_treebank_pos_tagger.pickle')
+        pos_tagger = pickle.load(open(tag))
         print 'Parsing sentences...'
         events = read_data(inputs)
-        parse.parse(events, ubt_chunker, username, post_proc)
+        parse.parse(events, ubt_chunker, pos_tagger, username, post_proc)
         for event in events:
             print '=======================\n'
             print 'event id: {}\n'.format(event)
