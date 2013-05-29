@@ -2,13 +2,18 @@ import petrarch
 import parse
 import pickle
 from nltk.tree import Tree
+import nltk as nk
 
 def test_main():
     sent = """Arnor is about to restore full diplomatic ties with Gondor almost 
               five years after crowds trashed its embassy, a senior official 
               said on Saturday."""
     key = 'DEMO-01'
-    petrarch._check_reqs()
+    try:
+        nk.data.load(nk.tag._POS_TAGGER)
+    except LookupError:
+        nk.download('maxent_treebank_pos_tagger')
+    #petrarch._check_reqs()
     chunker = petrarch._get_chunker('ubt_chunker_trained.pickle')
     ubt_chunker = pickle.load(open(chunker))
     update = parse.parse_sent(sent, key, ubt_chunker)
