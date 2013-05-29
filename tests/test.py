@@ -1,5 +1,5 @@
-import petrarch
-import parse
+import petrarch.petrarch
+import petrarch.parse
 import pickle
 from nltk.tree import Tree
 import nltk as nk
@@ -13,10 +13,10 @@ def test_main():
         nk.data.load(nk.tag._POS_TAGGER)
     except LookupError:
         nk.download('maxent_treebank_pos_tagger')
-    petrarch._check_reqs()
-    chunker = petrarch._get_chunker('ubt_chunker_trained.pickle')
+    #petrarch._check_reqs()
+    chunker = petrarch.petrarch._get_chunker('ubt_chunker_trained.pickle')
     ubt_chunker = pickle.load(open(chunker))
-    update = parse.parse_sent(sent, key, ubt_chunker)
+    update = petrarch.parse.parse_sent(sent, key, ubt_chunker)
     actual = {'DEMO-01': {'noun_phrases': ['Arnor', 
               'restore full diplomatic ties',
               'Gondor almost five years', 'crowds', 'its embassy',
