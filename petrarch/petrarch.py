@@ -17,7 +17,7 @@ def _check_reqs():
     #TODO: This is a temporary, hackish work around. This should be moved to
     #the setup.py file at some point.
     try:
-        nk.data.load(nk.tag._POS_Tagger)
+        nk.data.load(nk.tag._POS_TAGGER)
     except LookupError:
         nk.download('maxent_treebank_pos_tagger')
 
