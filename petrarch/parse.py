@@ -1,4 +1,5 @@
-import nltk as nk
+from nltk import chunk
+from nltk import word_tokenize
 import preprocess
 import itertools
 from joblib import Parallel, delayed
@@ -74,7 +75,7 @@ def parse_sent(sent, key, input_chunker, input_tagger):
     """
     sub_event_dict = {key: {}}
     #Tokenize the words
-    toks = nk.word_tokenize(sent)
+    toks = word_tokenize(sent)
     #Part-of-speech tag the tokens
     tags = input_tagger.tag(toks)
     tags = [tag for tag in tags if tag[1] != 'POS']
@@ -93,7 +94,7 @@ def parse_sent(sent, key, input_chunker, input_tagger):
     return sub_event_dict
 
 
-def post_process(sent, key, username):
+def post_process(sent, key, username, input_tagger):
     """
     Helper function to call the various post-processing functions, e.g.
     geolocation and feature extraction.
@@ -113,9 +114,9 @@ def post_process(sent, key, username):
     """
     sub_event_dict = {key: {}}
     #Tokenize the words
-    toks = nk.word_tokenize(sent)
+    toks = word_tokenize(sent)
     #Part-of-speech tag the tokens
-    tags = nk.pos_tag(toks)
+    tags = input_tagger.tag(toks)
     pp = preprocess.Process(tags)
     lat, lon = pp.geolocate(username)
     sub_event_dict[key]['lat'] = lat
@@ -190,7 +191,7 @@ def _get_vp(tree):
 
 #Chunker code pulled from
 #http://streamhacker.wordpress.com/2009/02/23/chunk-extraction-with-nltk/
-class TagChunker(nk.chunk.ChunkParserI):
+class TagChunker(chunk.ChunkParserI):
     """Class used to create a chunker for use in parsing POS-tagged
     sentences."""
     def __init__(self, chunk_tagger):
@@ -222,6 +223,6 @@ class TagChunker(nk.chunk.ChunkParserI):
         # w = word, t = part-of-speech tag, c = chunk tag
         lines = [' '.join([w, t, c]) for (w, (t, c)) in wtc if c]
         # create tree from conll formatted chunk lines
-        chunked = nk.chunk.conllstr2tree('\n'.join(lines))
+        chunked = chunk.conllstr2tree('\n'.join(lines))
 
         return chunked
