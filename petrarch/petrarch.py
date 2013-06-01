@@ -1,7 +1,6 @@
 import parse
 import argparse
 import pickle
-import nltk as nk
 import os
 
 
@@ -9,17 +8,6 @@ def _get_data(path):
     """Private function to get the absolute path to the installed files."""
     cwd = os.path.abspath(os.path.dirname(__file__))
     return os.path.join(cwd, 'data', path)
-
-
-def _check_reqs():
-    """Private function to check whether the POS tagger is available. If not,
-    downloads the tagger"""
-    #TODO: This is a temporary, hackish work around. This should be moved to
-    #the setup.py file at some point.
-    try:
-        nk.data.load(nk.tag._POS_TAGGER)
-    except LookupError:
-        nk.download('maxent_treebank_pos_tagger')
 
 
 def read_data(filepath):
@@ -105,7 +93,6 @@ def main():
     out_path = cli_args.output
     username = cli_args.username
     post_proc = cli_args.postprocess
-    _check_reqs()
     if cli_command == 'parse':
         print 'Reading in data...'
         chunk = _get_data('ubt_chunker_trained.pickle')
