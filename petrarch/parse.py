@@ -25,7 +25,7 @@ def parse(event_dict, input_chunker, input_tagger, username, process2=False):
     This is the function that should be called directly in a script.
 
     """
-    parsed = Parallel(n_jobs=-1)(delayed(parse_sent)
+    parsed = Parallel(n_jobs=-1)(delayed(parse_call)
                                  (sent=event_dict[key]['story'], key=key,
                                   input_chunker=input_chunker,
                                   input_tagger=input_tagger)
@@ -47,146 +47,116 @@ def parse(event_dict, input_chunker, input_tagger, username, process2=False):
             event_dict[key].update(post_parsed_sent[key])
 
 
-def parse_sent(sent, key, input_chunker, input_tagger):
-    """
-    Function to parse a given sentence. Tokenizes, POS tags, and chunks a
-    given sentence, along with extracting noun and verb phrases.
+def parse_call(sent, key, input_chunker, input_tagger):
+    sent_parser = SentParse(sent, key)
+    parsed_info = sent_parser.parse_sent(input_chunker, input_tagger)
 
-    Parameters
-    ----------
-
-    sent: String.
-          Sentence to be parsed.
-
-    key: String.
-         Key of the event used to access the event from the events
-         dictionary.
-
-    input_chunker: trained NLTK chunker.
-
-    Returns
-    -------
-
-    sub_event_dict: Dictionary.
-                    Container for  the POS-tagged sentence, chunked
-                    sentence, noun phrases, and verb phrases for each event
-                    in the input file.
-
-    """
-    sub_event_dict = {key: {}}
-    #Tokenize the words
-    toks = word_tokenize(sent)
-    #Part-of-speech tag the tokens
-    tags = input_tagger.tag(toks)
-    tags = [tag for tag in tags if tag[1] != 'POS']
-    chunker = TagChunker(input_chunker)
-    #Use chunker to chunk the tagged words and combine into a tree
-    tree = chunker.parse(tags)
-    sub_event_dict[key]['tagged'] = tags
-    sub_event_dict[key]['sent_tree'] = tree
-
-    noun_phrases = _get_np(tree)
-    verb_phrases = _get_vp(tree)
-
-    sub_event_dict[key]['noun_phrases'] = noun_phrases
-    sub_event_dict[key]['verb_phrases'] = verb_phrases
-
-    return sub_event_dict
+    return parsed_info
 
 
-def post_process(sent, key, username, input_tagger):
-    """
-    Helper function to call the various post-processing functions, e.g.
-    geolocation and feature extraction.
+class SentParse():
+    def __init__(self, sent, key):
+        self.sent = sent
+        self.key = key
 
-    Parameters
-    ----------
+    def parse_sent(self, input_chunker, input_tagger):
+        """
+        Function to parse a given sentence. Tokenizes, POS tags, and chunks a
+        given sentence, along with extracting noun and verb phrases.
 
-    sent: String.
-          Sentence to parse.
+        Parameters
+        ----------
 
-    key: String.
-         Key of the sentence in the general events dictionary.
+        input_chunker: trained NLTK chunker.
 
-    Username: String.
-              Geonames username.
+        Returns
+        -------
 
-    """
-    sub_event_dict = {key: {}}
-    #Tokenize the words
-    toks = word_tokenize(sent)
-    #Part-of-speech tag the tokens
-    tags = input_tagger.tag(toks)
-    pp = preprocess.Process(tags)
-    lat, lon = pp.geolocate(username)
-    sub_event_dict[key]['lat'] = lat
-    sub_event_dict[key]['lon'] = lon
+        sub_event_dict: Dictionary.
+                        Container for  the POS-tagged sentence, chunked
+                        sentence, noun phrases, and verb phrases for each event
+                        in the input file.
 
-    sub_event_dict[key]['num_involved'] = pp.num_involved()
+        """
+        sub_event_dict = {self.key: {}}
+        #Tokenize the words
+        toks = word_tokenize(self.sent)
+        #Part-of-speech tag the tokens
+        tags = input_tagger.tag(toks)
+        tags = [tag for tag in tags if tag[1] != 'POS']
+        chunker = TagChunker(input_chunker)
+        #Use chunker to chunk the tagged words and combine into a tree
+        self.tree = chunker.parse(tags)
+        sub_event_dict[self.key]['tagged'] = tags
+        sub_event_dict[self.key]['sent_tree'] = self.tree
 
-    return sub_event_dict
+        noun_phrases = self._get_np()
+        verb_phrases = self._get_vp()
 
+        sub_event_dict[self.key]['noun_phrases'] = noun_phrases
+        sub_event_dict[self.key]['verb_phrases'] = verb_phrases
 
-def _get_np(tree):
-    """
-    Private function to extract noun phrases from a parse tree of any given
-    sentence.
+        return sub_event_dict
 
-    Parameters
-    ----------
+    def _get_np(self):
+        """
+        Private function to extract noun phrases from a parse tree of any given
+        sentence.
 
-    tree: NLTK tree object.
-          Parse tree for a particular sentence.
+        Parameters
+        ----------
 
-    Returns
-    -------
+        tree: NLTK tree object.
+            Parse tree for a particular sentence.
 
-    noun_phrases: List.
-                  Noun phrases within a sentence.
-    """
-    noun_phrases = []
-    for sub in tree.subtrees(filter=lambda x: x.node == 'NP'):
-        nouns = []
-        for i in xrange(len(sub)):
-            nouns.append(sub[i][0])
-        nouns = ' '.join(nouns)
-        noun_phrases.append(nouns)
+        Returns
+        -------
 
-    return noun_phrases
+        noun_phrases: List.
+                    Noun phrases within a sentence.
+        """
+        noun_phrases = []
+        for sub in self.tree.subtrees(filter=lambda x: x.node == 'NP'):
+            nouns = []
+            for i in xrange(len(sub)):
+                nouns.append(sub[i][0])
+            nouns = ' '.join(nouns)
+            noun_phrases.append(nouns)
 
+        return noun_phrases
 
-def _get_vp(tree):
-    """
-    Private function to extract verb phrases from a parse tree of any given
-    sentence.
+    def _get_vp(self):
+        """
+        Private function to extract verb phrases from a parse tree of any given
+        sentence.
 
-    Parameters
-    ----------
+        Parameters
+        ----------
 
-    tree: NLTK tree object.
-          Parse tree for a particular sentence.
+        tree: NLTK tree object.
+            Parse tree for a particular sentence.
 
-    Returns
-    -------
+        Returns
+        -------
 
-    verb_phrases: List of tuples.
-                  Collection of verb phrases in a sentence. The tuples are
-                  of the form (verb, noun phrase), where the
-                  noun phrase is one that immediately follows the verb.
+        verb_phrases: List of tuples.
+                    Collection of verb phrases in a sentence. The tuples are
+                    of the form (verb, noun phrase), where the
+                    noun phrase is one that immediately follows the verb.
 
-    """
-    verb_phrases = []
-    prev_type = None
-    prev_chunk = None
-    for sub in tree.subtrees(filter=lambda x: x != 'S'):
-        if prev_type == 'VP' and sub.node == 'NP':
-            verb = ' '.join([vw[0] for vw in prev_chunk])
-            noun = ' '.join([nw[0] for nw in sub])
-            verb_phrases.append((verb, noun))
-        prev_type = sub.node
-        prev_chunk = sub
+        """
+        verb_phrases = []
+        prev_type = None
+        prev_chunk = None
+        for sub in self.tree.subtrees(filter=lambda x: x != 'S'):
+            if prev_type == 'VP' and sub.node == 'NP':
+                verb = ' '.join([vw[0] for vw in prev_chunk])
+                noun = ' '.join([nw[0] for nw in sub])
+                verb_phrases.append((verb, noun))
+            prev_type = sub.node
+            prev_chunk = sub
 
-    return verb_phrases
+        return verb_phrases
 
 
 #Chunker code pulled from

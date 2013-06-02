@@ -2,6 +2,39 @@ import geonames_api
 import nltk as nk
 
 
+def post_process(sent, key, username, input_tagger):
+    """
+    Helper function to call the various post-processing functions, e.g.
+    geolocation and feature extraction.
+
+    Parameters
+    ----------
+
+    sent: String.
+          Sentence to parse.
+
+    key: String.
+         Key of the sentence in the general events dictionary.
+
+    Username: String.
+              Geonames username.
+
+    """
+    sub_event_dict = {key: {}}
+    #Tokenize the words
+    toks = word_tokenize(sent)
+    #Part-of-speech tag the tokens
+    tags = input_tagger.tag(toks)
+    pp = preprocess.Process(tags)
+    lat, lon = pp.geolocate(username)
+    sub_event_dict[key]['lat'] = lat
+    sub_event_dict[key]['lon'] = lon
+
+    sub_event_dict[key]['num_involved'] = pp.num_involved()
+
+    return sub_event_dict
+
+
 class Process():
     def __init__(self, sent):
         self.trigrams = nk.trigrams(sent)
