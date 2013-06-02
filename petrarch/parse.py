@@ -1,11 +1,10 @@
 from nltk import chunk
 from nltk import word_tokenize
-import preprocess
 import itertools
 from joblib import Parallel, delayed
 
 
-def parse(event_dict, input_chunker, input_tagger, username, process2=False):
+def parse(event_dict, input_chunker, input_tagger):
     """
     Function that calls the `parse_sent` function in parallel. Helper
     function to make calling the necessary functions cleaner.
@@ -34,17 +33,6 @@ def parse(event_dict, input_chunker, input_tagger, username, process2=False):
     for parsed_sent in parsed:
         key = parsed_sent.keys()[0]
         event_dict[key].update(parsed_sent[key])
-
-    if process2:
-        post_parsed = Parallel(n_jobs=-1)(delayed(post_process)
-                                         (sent=event_dict[key]['story'],
-                                          key=key,
-                                          username=username)
-                                          for key in event_dict)
-
-        for post_parsed_sent in post_parsed:
-            key = post_parsed_sent.keys()[0]
-            event_dict[key].update(post_parsed_sent[key])
 
 
 def parse_call(sent, key, input_chunker, input_tagger):
