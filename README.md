@@ -20,7 +20,7 @@ command: parse
 
 The command as of now should look (something) like:
 
-    python petrarch.py parse -i SENTENCE_FILE -u USERNAME -P
+    python petrarch.py parse -i SENTENCE_FILE -u USERNAME -G -F
 
 ####Tests
 
@@ -35,4 +35,4 @@ install it, the use of a temporary virtual environment is advisable. Once
 installed, it should be possible to run the program using the following
 command:
 
-    petrarch parse -i SENTENCE_FILE -u USERNAME -P
+    petrarch parse -i SENTENCE_FILE -u USERNAME -G -F
