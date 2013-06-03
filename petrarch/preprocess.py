@@ -1,10 +1,63 @@
 import geonames_api
-import nltk as nk
+import nltk.stem
+from nltk import word_tokenize, trigrams
+from joblib import Parallel, delayed
 
 
-class Process():
-    def __init__(self, sent):
-        self.trigrams = nk.trigrams(sent)
+def process(event_dict, input_tagger, username=None, geolocate=False, feature_extract=False):
+        post_parsed = Parallel(n_jobs=-1)(delayed(process_call)
+                                         (sent=event_dict[key]['story'],
+                                          key=key, input_tagger=input_tagger,
+                                          geolocate=geolocate,
+                                          feature_extract=feature_extract,
+                                          username=username)
+                                          for key in event_dict)
+
+        for post_parsed_sent in post_parsed:
+            key = post_parsed_sent.keys()[0]
+            event_dict[key].update(post_parsed_sent[key])
+
+
+def process_call(sent, key, input_tagger, username=None, geolocate=False, feature_extract=False):
+    post_processor = ProcessSuite(sent, key, input_tagger)
+    processed_info = post_processor.post_process(geolocate, username, feature_extract)
+
+    return processed_info
+
+
+class ProcessSuite():
+    def __init__(self, sent, key, input_tagger):
+        toks = word_tokenize(sent)
+        tags = input_tagger.tag(toks)
+        self.trigrams = trigrams(tags)
+        self.sent = sent
+        self.key = key
+
+    def post_process(self, geo=False, username=None, feature=False):
+        """
+        Helper function to call the various post-processing functions, e.g.
+        geolocation and feature extraction.
+
+        Parameters
+        ----------
+
+        Username: String.
+                Geonames username.
+
+        """
+        if geo and not username:
+            print """You must enter a username for geonames.org if you wish to
+                     geolocate events."""
+        sub_event_dict = {self.key: {}}
+        if geo:
+            lat, lon = self.geolocate(username)
+            sub_event_dict[self.key]['lat'] = lat
+            sub_event_dict[self.key]['lon'] = lon
+
+        if feature:
+            sub_event_dict[self.key]['num_involved'] = self.num_involved()
+
+        return sub_event_dict
 
     def geolocate(self, username):
         """
@@ -43,7 +96,7 @@ class Process():
         #If it found a location
         if loc:
             #Create parameters to pass to the geonames_api
-            loc = nk.stem.PorterStemmer().stem(loc)
+            loc = nltk.stem.PorterStemmer().stem(loc)
             params = geonames_api.make_params({'q': loc})
             #Try to obtain coordinates from geonames
             try:

@@ -1,4 +1,5 @@
 import parse
+import preprocess
 import argparse
 import pickle
 import os
@@ -56,24 +57,19 @@ PETRARCH
                                          PETRARCH parser.""")
     parse_command.add_argument('-i', '--inputs',
                                help='File, or directory of files, to parse.',
-                               default=None)
+                               required=True)
     parse_command.add_argument('-o', '--output',
                                help='File to write parsed events',
                                default=None)
     parse_command.add_argument('-u', '--username',
                                help="geonames.org username", default=None)
-    parse_command.add_argument('-P', '--postprocess', help="""Whether post
-                               processing, such as geolocation and feature
-                               extraction, should occur. Default False.""",
-                               default=False, action='store_true')
-#These will be used as the program develops further.
-#    parse_command.add_argument('-g', '--geolocate', action='store_true',
-#                          default=False, help="""Whether to geolocate events.
-#                          parse_command to False""")
-#    parse_command.add_argument('-f', '--features', action='store_true',
-#                          default=False,
-#                          help="""Whether to extract features from sentence.
-#                          parse_command to False""")
+    parse_command.add_argument('-G', '--geolocate', action='store_true',
+                               default=False, help="""Whether to geolocate 
+                               events. Defaults to False""")
+    parse_command.add_argument('-F', '--features', action='store_true',
+                               default=False,
+                               help="""Whether to extract features from 
+                               sentence. Defaults to False""")
     parse_command.add_argument('-n', '--n_cores', type=int, default=-1,
                                help="""Number of cores to use for parallel
                                processing. parse_command to -1 for all
@@ -92,7 +88,8 @@ def main():
     inputs = cli_args.inputs
     out_path = cli_args.output
     username = cli_args.username
-    post_proc = cli_args.postprocess
+    geo_boolean = cli_args.geolocate
+    feature_boolean = cli_args.features
     if cli_command == 'parse':
         print 'Reading in data...'
         chunk = _get_data('ubt_chunker_trained.pickle')
@@ -101,7 +98,10 @@ def main():
         pos_tagger = pickle.load(open(tag))
         print 'Parsing sentences...'
         events = read_data(inputs)
-        parse.parse(events, ubt_chunker, pos_tagger, username, post_proc)
+        parse.parse(events, ubt_chunker, pos_tagger)
+        if geo_boolean or feature_boolean:
+            preprocess.process(events, pos_tagger, username, geo_boolean,
+                               feature_boolean)
         for event in events:
             print '=======================\n'
             print 'event id: {}\n'.format(event)
