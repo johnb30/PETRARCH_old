@@ -13,8 +13,9 @@ Current options are:
 command: parse
 
 - -i : Input file
-- -u : Geonames username
-- -P : Boolean argument indicating whether to run postprocessing. 
+- -u : Geonames username. Optional.
+- -F : Boolean argument indicating whether to run feature extraction. Optional.
+- -G : Boolean argument indicating whether to run geolocation. Username required. Optional.
 - -h : help
 
 The command as of now should look (something) like:

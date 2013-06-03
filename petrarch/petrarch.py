@@ -57,17 +57,12 @@ PETRARCH
                                          PETRARCH parser.""")
     parse_command.add_argument('-i', '--inputs',
                                help='File, or directory of files, to parse.',
-                               default=None)
+                               required=True)
     parse_command.add_argument('-o', '--output',
                                help='File to write parsed events',
                                default=None)
     parse_command.add_argument('-u', '--username',
                                help="geonames.org username", default=None)
-#    parse_command.add_argument('-P', '--postprocess', help="""Whether post
-#                               processing, such as geolocation and feature
-#                               extraction, should occur. Default False.""",
-#                               default=False, action='store_true')
-#These will be used as the program develops further.
     parse_command.add_argument('-G', '--geolocate', action='store_true',
                                default=False, help="""Whether to geolocate 
                                events. Defaults to False""")
