@@ -12,7 +12,7 @@ def test_main():
     ubt_chunker = pickle.load(open(chunker))
     tag = petrarch.petrarch._get_data('maxent_treebank_pos_tagger.pickle')
     pos_tagger = pickle.load(open(tag))
-    update = petrarch.parse.parse_sent(sent, key, ubt_chunker, pos_tagger)
+    update = petrarch.parse.parse_call(sent, key, ubt_chunker, pos_tagger)
     actual = {'DEMO-01': {'noun_phrases': ['Arnor', 
               'restore full diplomatic ties',
               'Gondor almost five years', 'crowds', 'its embassy',
