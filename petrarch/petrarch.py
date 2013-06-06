@@ -60,7 +60,7 @@ PETRARCH
                                required=True)
     parse_command.add_argument('-o', '--output',
                                help='File to write parsed events',
-                               default=None)
+                               required=True)
     parse_command.add_argument('-u', '--username',
                                help="geonames.org username", default=None)
     parse_command.add_argument('-G', '--geolocate', action='store_true',
@@ -102,22 +102,25 @@ def main():
         if geo_boolean or feature_boolean:
             preprocess.process(events, pos_tagger, username, geo_boolean,
                                feature_boolean)
+        event_output = str()
         for event in events:
-            print '=======================\n'
-            print 'event id: {}\n'.format(event)
-            print 'POS tagged sent:\n {}\n'.format(events[event]['tagged'])
-            print 'NP tagged sent:\n {}\n'.format(events[event]['sent_tree'])
-            print 'Noun phrases: \n {}\n'.format(events[event]['noun_phrases'])
-            print 'Verb phrases: \n {}\n'.format(events[event]['verb_phrases'])
+            event_output += '=======================\n'
+            event_output += 'event id: {}\n'.format(event)
+            event_output += 'POS tagged sent:\n {}\n'.format(events[event]['tagged'])
+            event_output += 'NP tagged sent:\n {}\n'.format(events[event]['sent_tree'])
+            event_output += 'Noun phrases: \n {}\n'.format(events[event]['noun_phrases'])
+            event_output += 'Verb phrases: \n {}\n'.format(events[event]['verb_phrases'])
             try:
-                print 'Geolocate: \n {}, {}\n'.format(events[event]['lat'],
+                event_output += 'Geolocate: \n {}, {}\n'.format(events[event]['lat'],
                                                       events[event]['lon'])
             except KeyError:
                 pass
             try:
-                print 'Feature extract: \n {}\n'.format(events[event]['num_involved'])
+                event_output += 'Feature extract: \n {}\n'.format(events[event]['num_involved'])
             except KeyError:
                 pass
+        with open(out_path, 'w') as f:
+            f.write(event_output)
     else:
         print 'Please enter a valid command!'
 
