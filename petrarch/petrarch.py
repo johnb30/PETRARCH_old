@@ -104,14 +104,14 @@ def main():
                                feature_boolean)
         event_output = str()
         for event in events:
-            event_output += '=======================\n'
-            event_output += 'event id: {}\n'.format(event)
-            event_output += 'POS tagged sent:\n {}\n'.format(events[event]['tagged'])
-            event_output += 'NP tagged sent:\n {}\n'.format(events[event]['sent_tree'])
+            event_output += '\n=======================\n\n'
+            event_output += 'event id: {}\n\n'.format(event)
+            event_output += 'POS tagged sent:\n {}\n\n'.format(events[event]['tagged'])
+            event_output += 'NP tagged sent:\n {}\n\n'.format(events[event]['sent_tree'])
             event_output += 'Noun phrases: \n {}\n'.format(events[event]['noun_phrases'])
             event_output += 'Verb phrases: \n {}\n'.format(events[event]['verb_phrases'])
             try:
-                event_output += 'Geolocate: \n {}, {}\n'.format(events[event]['lat'],
+                event_output += '\nGeolocate: \n {}, {}\n'.format(events[event]['lat'],
                                                       events[event]['lon'])
             except KeyError:
                 pass
