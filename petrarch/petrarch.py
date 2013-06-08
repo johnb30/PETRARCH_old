@@ -20,8 +20,8 @@ def read_data(filepath):
     Parameters
     ----------
 
-    filepath: String.
-              Filepath of the file containing the sentence to be parsed.
+    filepath: String.   Filepath of the file containing the sentence to be
+    parsed.
 
     """
     event_dict = dict()
