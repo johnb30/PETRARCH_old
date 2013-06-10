@@ -2,6 +2,7 @@ from nltk import chunk
 from nltk import word_tokenize
 import itertools
 from joblib import Parallel, delayed
+from datetime import datetime
 
 
 def parse(event_dict, input_chunker, input_tagger):
@@ -66,6 +67,7 @@ class SentParse():
                         in the input file.
 
         """
+        time1 = datetime.now()
         sub_event_dict = {self.key: {}}
         #Tokenize the words
         toks = word_tokenize(self.sent)
@@ -80,6 +82,10 @@ class SentParse():
 
         noun_phrases = self._get_np()
         verb_phrases = self._get_vp()
+        time2 = datetime.now()
+
+        time3 = time2-time1
+        sub_event_dict[self.key]['parse_chunk_time'] = time3
 
         sub_event_dict[self.key]['noun_phrases'] = noun_phrases
         sub_event_dict[self.key]['verb_phrases'] = verb_phrases
