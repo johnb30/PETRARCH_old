@@ -1,5 +1,5 @@
 import parse
-import preprocess
+import postprocess
 import argparse
 import pickle
 import os
@@ -103,7 +103,7 @@ def main():
         parse.parse(events, ubt_chunker, pos_tagger)
         print 'Done processing...{}:{}.{}'.format(datetime.now().hour, datetime.now().minute, datetime.now().second)
         if geo_boolean or feature_boolean:
-            preprocess.process(events, pos_tagger, username, geo_boolean,
+            postprocess.process(events, pos_tagger, username, geo_boolean,
                                feature_boolean)
         event_output = str()
         print 'Writing the events to file...'
