@@ -3,6 +3,7 @@ import preprocess
 import argparse
 import pickle
 import os
+from datetime import datetime
 
 
 def _get_data(path):
@@ -64,11 +65,11 @@ PETRARCH
     parse_command.add_argument('-u', '--username',
                                help="geonames.org username", default=None)
     parse_command.add_argument('-G', '--geolocate', action='store_true',
-                               default=False, help="""Whether to geolocate 
+                               default=False, help="""Whether to geolocate
                                events. Defaults to False""")
     parse_command.add_argument('-F', '--features', action='store_true',
                                default=False,
-                               help="""Whether to extract features from 
+                               help="""Whether to extract features from
                                sentence. Defaults to False""")
     parse_command.add_argument('-n', '--n_cores', type=int, default=-1,
                                help="""Number of cores to use for parallel
@@ -91,25 +92,29 @@ def main():
     geo_boolean = cli_args.geolocate
     feature_boolean = cli_args.features
     if cli_command == 'parse':
-        print 'Reading in data...'
+        print 'Reading in data...{}:{}.{}'.format(datetime.now().now().hour, datetime.now().minute, datetime.now().second)
         chunk = _get_data('ubt_chunker_trained.pickle')
         ubt_chunker = pickle.load(open(chunk))
         tag = _get_data('maxent_treebank_pos_tagger.pickle')
         pos_tagger = pickle.load(open(tag))
-        print 'Parsing sentences...'
+        print 'Reading sentences in...{}:{}.{}'.format(datetime.now().hour, datetime.now().minute, datetime.now().second)
         events = read_data(inputs)
-        parse.parse(events, ubt_chunker, pos_tagger)
+        print 'Parsing sentences...{}:{}.{}'.format(datetime.now().hour, datetime.now().minute, datetime.now().second)
+        parse.parse(events, ubt_chunker, pos_tagger, cli_args.n_cores)
+        print 'Done processing...{}:{}.{}'.format(datetime.now().hour, datetime.now().minute, datetime.now().second)
         if geo_boolean or feature_boolean:
             preprocess.process(events, pos_tagger, username, geo_boolean,
                                feature_boolean)
         event_output = str()
+        print 'Writing the events to file...'
         for event in events:
             event_output += '\n=======================\n\n'
             event_output += 'event id: {}\n\n'.format(event)
             event_output += 'POS tagged sent:\n {}\n\n'.format(events[event]['tagged'])
             event_output += 'NP tagged sent:\n {}\n\n'.format(events[event]['sent_tree'])
             event_output += 'Noun phrases: \n {}\n'.format(events[event]['noun_phrases'])
-            event_output += 'Verb phrases: \n {}\n'.format(events[event]['verb_phrases'])
+            event_output += 'Verb phrases: \n {}\n\n'.format(events[event]['verb_phrases'])
+            event_output += 'Parse time: \n {}\n'.format(events[event]['parse_chunk_time'])
             try:
                 event_output += '\nGeolocate: \n {}, {}\n'.format(events[event]['lat'],
                                                       events[event]['lon'])

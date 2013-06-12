@@ -2,9 +2,10 @@ from nltk import chunk
 from nltk import word_tokenize
 import itertools
 from joblib import Parallel, delayed
+from datetime import datetime
 
 
-def parse(event_dict, input_chunker, input_tagger):
+def parse(event_dict, input_chunker, input_tagger, cores):
     """
     Function that calls the `parse_sent` function in parallel. Helper
     function to make calling the necessary functions cleaner.
@@ -24,7 +25,7 @@ def parse(event_dict, input_chunker, input_tagger):
     This is the function that should be called directly in a script.
 
     """
-    parsed = Parallel(n_jobs=-1)(delayed(parse_call)
+    parsed = Parallel(n_jobs=cores)(delayed(parse_call)
                                  (sent=event_dict[key]['story'], key=key,
                                   input_chunker=input_chunker,
                                   input_tagger=input_tagger)
@@ -66,6 +67,7 @@ class SentParse():
                         in the input file.
 
         """
+        time1 = datetime.now()
         sub_event_dict = {self.key: {}}
         #Tokenize the words
         toks = word_tokenize(self.sent)
@@ -80,6 +82,10 @@ class SentParse():
 
         noun_phrases = self._get_np()
         verb_phrases = self._get_vp()
+        time2 = datetime.now()
+
+        time3 = time2-time1
+        sub_event_dict[self.key]['parse_chunk_time'] = time3
 
         sub_event_dict[self.key]['noun_phrases'] = noun_phrases
         sub_event_dict[self.key]['verb_phrases'] = verb_phrases
