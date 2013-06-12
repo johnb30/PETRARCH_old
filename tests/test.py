@@ -1,6 +1,7 @@
 import petrarch.petrarch
 import petrarch.parse
 import pickle
+import datetime
 from nltk.tree import Tree
 
 def test_main():
@@ -17,6 +18,7 @@ def test_main():
               'restore full diplomatic ties',
               'Gondor almost five years', 'crowds', 'its embassy',
               'a senior official', 'Saturday'],
+              'parse_chunk_time': datetime.timedelta(0, 0, 55462),
               'sent_tree': Tree('S', [Tree('NP', [('Arnor', 'NNP')]), 
               Tree('VP', [('is', 'VBZ')]), Tree('PP', [('about', 'IN')]), 
               Tree('PP', [('to', 'TO')]), Tree('NP', [('restore', 'VB'), 
