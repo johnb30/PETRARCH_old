@@ -1,8 +1,10 @@
-import parse
 import postprocess
 import argparse
 import pickle
+import parse
+import glob
 import os
+from ConfigParser import ConfigParser
 from datetime import datetime
 
 
@@ -82,8 +84,35 @@ PETRARCH
     return args
 
 
+def parse_config():
+    """Function to parse the config file for PETRARCH."""
+    config_file = glob.glob('config.ini')
+    if config_file:
+        config = ConfigParser.read(config_file)
+        try:
+            actors_file = config.get('Dictionary Files', 'actors')
+            verbs_file = config.get('Dictionary Files', 'actors')
+            return actors_file, verbs_file
+        except Exception, e:
+            print 'Problem parsing config file. {}'.format(e)
+    else:
+        cwd = os.path.abspath(os.path.dirname(__file__))
+        config_file = os.path.join(cwd, 'default_config.ini')
+        config = ConfigParser.read(config_file)
+        try:
+            actors_file = config.get('Dictionary Files', 'actors')
+            verbs_file = config.get('Dictionary Files', 'actors')
+            actors_file = os.path.join(cwd, 'dictionaries', actors_file)
+            verbs_file = os.path.join(cwd, 'dictionaries', verbs_file)
+            return actors_file, verbs_file
+        except Exception, e:
+            print 'Problem parsing config file. {}'.format(e)
+
+
 def main():
     """Main function"""
+    actors, verbs = parse_config()
+
     cli_args = parse_cli_args()
     cli_command = cli_args.command_name
     inputs = cli_args.inputs
