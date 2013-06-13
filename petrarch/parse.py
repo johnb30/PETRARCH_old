@@ -37,8 +37,11 @@ def parse(event_dict, input_chunker, input_tagger):
 
 
 def parse_call(sent, key, input_chunker, input_tagger):
+    time1 = datetime.now()
     sent_parser = SentParse(sent, key)
     parsed_info = sent_parser.parse_sent(input_chunker, input_tagger)
+    time2 = datetime.now()
+    parsed_info[key]['parse_call_time'] = time2 - time1
 
     return parsed_info
 

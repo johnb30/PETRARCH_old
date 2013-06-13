@@ -87,21 +87,24 @@ PETRARCH
 def parse_config():
     """Function to parse the config file for PETRARCH."""
     config_file = glob.glob('config.ini')
+    parser = ConfigParser()
     if config_file:
-        config = ConfigParser.read(config_file)
+        print 'Found a config file in working directory.'
+        parser.read(config_file)
         try:
-            actors_file = config.get('Dictionary Files', 'actors')
-            verbs_file = config.get('Dictionary Files', 'actors')
+            actors_file = parser.get('Dictionary Files', 'actors')
+            verbs_file = parser.get('Dictionary Files', 'verbs')
             return actors_file, verbs_file
         except Exception, e:
             print 'Problem parsing config file. {}'.format(e)
     else:
         cwd = os.path.abspath(os.path.dirname(__file__))
         config_file = os.path.join(cwd, 'default_config.ini')
-        config = ConfigParser.read(config_file)
+        parser.read(config_file)
+        print 'No config found. Using default.'
         try:
-            actors_file = config.get('Dictionary Files', 'actors')
-            verbs_file = config.get('Dictionary Files', 'actors')
+            actors_file = parser.get('Dictionary Files', 'actors')
+            verbs_file = parser.get('Dictionary Files', 'verbs')
             actors_file = os.path.join(cwd, 'dictionaries', actors_file)
             verbs_file = os.path.join(cwd, 'dictionaries', verbs_file)
             return actors_file, verbs_file
@@ -137,6 +140,7 @@ def main():
         event_output = str()
         print 'Writing the events to file...'
         for event in events:
+            print events[event].keys()
             event_output += '\n=======================\n\n'
             event_output += 'event id: {}\n\n'.format(event)
             event_output += 'POS tagged sent:\n {}\n\n'.format(events[event]['tagged'])
@@ -144,6 +148,7 @@ def main():
             event_output += 'Noun phrases: \n {}\n'.format(events[event]['noun_phrases'])
             event_output += 'Verb phrases: \n {}\n\n'.format(events[event]['verb_phrases'])
             event_output += 'Parse time: \n {}\n'.format(events[event]['parse_chunk_time'])
+            event_output += 'Instantiation time: \n {}\n'.format(events[event]['parse_call_time'])
             try:
                 event_output += '\nGeolocate: \n {}, {}\n'.format(events[event]['lat'],
                                                       events[event]['lon'])
