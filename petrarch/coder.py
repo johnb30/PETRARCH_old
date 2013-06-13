@@ -150,3 +150,43 @@ class ReadDictionaries():
             self.actor_dict[lockey].sort(key=len, reverse=True)
 
         return self.actor_dict
+
+class Coder():
+    def __init__(self, parse_tree):
+        self.sent = self._tree_to_list(parse_tree)
+
+    def _tree_to_list(self, tree):
+        output_sentence = list()
+        for chunk in tree:
+            try:
+                chunk_parts = list()
+                if chunk.node in ('NP', 'VP'):
+                    chunk_parts.append(chunk.node)
+                    chunk_parts.append('---')
+                    for word_pos in chunk:
+                        chunk_parts.append([word_pos[0].upper(), word_pos[1]])
+                elif chunk.node == 'PP':
+                    chunk_parts.append(chunk.node)
+                    for word_pos in chunk:
+                        chunk_parts.append([word_pos[0].upper(), word_pos[1]])
+                else:
+                    print 'Something unexpected.' \
+                          'Chunk type: {}'.format(chunk.node)
+                output_sentence.append(chunk_parts)
+            except AttributeError:
+                chunk_parts = list()
+                if chunk[0] == ',':
+                    chunk_parts.append('CM')
+                    chunk_parts.append([',', ','])
+                elif chunk[1] == 'CC':
+                    chunk_parts.append(chunk[1])
+                    chunk_parts.append([chunk[0].upper(), chunk[1]])
+                elif chunk[0].isalpha():
+                    chunk_parts.append('OT')
+                    chunk_parts.append([chunk[0].upper(), chunk[1]])
+                else:
+                    chunk_parts.append('UK')
+                    chunk_parts.append([chunk[0].upper(), chunk[1]])
+                output_sentence.append(chunk_parts)
+        return output_sentence
+
