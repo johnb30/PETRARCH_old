@@ -14,6 +14,7 @@ command: parse
 
 - -i : Input file. Required.
 - -o : Output file. Required.
+- -n : Number of cores to use in parallel processing. Defaults to `-1`, which indicates all cores. Optional.
 - -u : Geonames username. Optional.
 - -F : Boolean argument indicating whether to run feature extraction. Optional.
 - -G : Boolean argument indicating whether to run geolocation. Username required. Optional.
@@ -21,7 +22,7 @@ command: parse
 
 The command as of now should look (something) like:
 
-    python petrarch.py parse -i SENTENCE_FILE -o output.txt -u USERNAME -G -F
+    python petrarch.py parse -i SENTENCE_FILE -o output.txt -n 2 -u USERNAME -G -F
 
 ####Tests
 
@@ -36,4 +37,4 @@ install it, the use of a temporary virtual environment is advisable. Once
 installed, it should be possible to run the program using the following
 command:
 
-    petrarch parse -i SENTENCE_FILE -o output.txt -u USERNAME -G -F
+    petrarch parse -i SENTENCE_FILE -o output.txt -n 2 -u USERNAME -G -F

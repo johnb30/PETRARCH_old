@@ -132,7 +132,7 @@ def main():
         print 'Reading sentences in...{}:{}.{}'.format(datetime.now().hour, datetime.now().minute, datetime.now().second)
         events = read_data(inputs)
         print 'Parsing sentences...{}:{}.{}'.format(datetime.now().hour, datetime.now().minute, datetime.now().second)
-        parse.parse(events, ubt_chunker, pos_tagger)
+        parse.parse(events, ubt_chunker, pos_tagger, cli_args.n_cores)
         print 'Done processing...{}:{}.{}'.format(datetime.now().hour, datetime.now().minute, datetime.now().second)
         if geo_boolean or feature_boolean:
             postprocess.process(events, pos_tagger, username, geo_boolean,

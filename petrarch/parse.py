@@ -5,7 +5,7 @@ from joblib import Parallel, delayed
 from datetime import datetime
 
 
-def parse(event_dict, input_chunker, input_tagger):
+def parse(event_dict, input_chunker, input_tagger, cores):
     """
     Function that calls the `parse_sent` function in parallel. Helper
     function to make calling the necessary functions cleaner.
@@ -25,7 +25,7 @@ def parse(event_dict, input_chunker, input_tagger):
     This is the function that should be called directly in a script.
 
     """
-    parsed = Parallel(n_jobs=-1)(delayed(parse_call)
+    parsed = Parallel(n_jobs=cores)(delayed(parse_call)
                                  (sent=event_dict[key]['story'], key=key,
                                   input_chunker=input_chunker,
                                   input_tagger=input_tagger)
