@@ -129,7 +129,7 @@ def main():
         ubt_chunker = pickle.load(open(chunk))
         tag = _get_data('maxent_treebank_pos_tagger.pickle')
         pos_tagger = pickle.load(open(tag))
-        print 'Reading sentences in...{}:{}.{}'.format(datetime.now().hour, datetime.now().minute, datetime.now().second)
+        print 'Reading in sentences...{}:{}.{}'.format(datetime.now().hour, datetime.now().minute, datetime.now().second)
         events = read_data(inputs)
         print 'Parsing sentences...{}:{}.{}'.format(datetime.now().hour, datetime.now().minute, datetime.now().second)
         parse.parse(events, ubt_chunker, pos_tagger, cli_args.n_cores)
@@ -140,7 +140,6 @@ def main():
         event_output = str()
         print 'Writing the events to file...'
         for event in events:
-            print events[event].keys()
             event_output += '\n=======================\n\n'
             event_output += 'event id: {}\n\n'.format(event)
             event_output += 'POS tagged sent:\n {}\n\n'.format(events[event]['tagged'])
@@ -148,7 +147,7 @@ def main():
             event_output += 'Noun phrases: \n {}\n'.format(events[event]['noun_phrases'])
             event_output += 'Verb phrases: \n {}\n\n'.format(events[event]['verb_phrases'])
             event_output += 'Parse time: \n {}\n'.format(events[event]['parse_chunk_time'])
-            event_output += 'Instantiation time: \n {}\n'.format(events[event]['parse_call_time'])
+            #event_output += 'Instantiation time: \n {}\n'.format(events[event]['parse_call_time'])
             try:
                 event_output += '\nGeolocate: \n {}, {}\n'.format(events[event]['lat'],
                                                       events[event]['lon'])
