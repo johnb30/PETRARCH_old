@@ -25,30 +25,40 @@ def parse(event_dict, input_chunker, input_tagger, cores):
     This is the function that should be called directly in a script.
 
     """
-    parsed = Parallel(n_jobs=cores)(delayed(parse_call)
-                                 (sent=event_dict[key]['story'], key=key,
-                                  input_chunker=input_chunker,
-                                  input_tagger=input_tagger)
-                                 for key in event_dict)
+    parser = SentParse(input_chunker, input_tagger)
+#    parsed = Parallel(n_jobs=cores)(delayed(parse_call)
+#                                 (sent=event_dict[key]['story'], key=key,
+#                                  parser=parser)
+#                                 for key in event_dict)
+    parsed = list()
+    time1 = datetime.now()
+    for key in event_dict:
+        #temp = parse_call(sent=event_dict[key]['story'], key=key, parser=parser)
+        temp = parser.parse_sent(sent=event_dict[key]['story'], key=key)
+        parsed.append(temp)
+    time2 = datetime.now()
+    print 'This is the time for the for-loop: {}'.format(time2 - time1)
 
     for parsed_sent in parsed:
         key = parsed_sent.keys()[0]
         event_dict[key].update(parsed_sent[key])
 
 
-def parse_call(sent, key, input_chunker, input_tagger):
-    sent_parser = SentParse(sent, key)
-    parsed_info = sent_parser.parse_sent(input_chunker, input_tagger)
+def parse_call(sent, key, parser):
+    time1 = datetime.now()
+    parsed_info = parser.parse_sent(sent, key)
+    time2 = datetime.now()
+    parsed_info[key]['parse_call_time'] = time2 - time1
 
     return parsed_info
 
 
 class SentParse():
-    def __init__(self, sent, key):
-        self.sent = sent
-        self.key = key
+    def __init__(self, input_chunker, input_tagger):
+        self.chunker = TagChunker(input_chunker)
+        self.input_tagger = input_tagger
 
-    def parse_sent(self, input_chunker, input_tagger):
+    def parse_sent(self, sent, key):
         """
         Function to parse a given sentence. Tokenizes, POS tags, and chunks a
         given sentence, along with extracting noun and verb phrases.
@@ -68,27 +78,26 @@ class SentParse():
 
         """
         time1 = datetime.now()
-        sub_event_dict = {self.key: {}}
+        sub_event_dict = {key: {}}
         #Tokenize the words
-        toks = word_tokenize(self.sent)
+        toks = word_tokenize(sent)
         #Part-of-speech tag the tokens
-        tags = input_tagger.tag(toks)
+        tags = self.input_tagger.tag(toks)
         tags = [tag for tag in tags if tag[1] != 'POS']
-        chunker = TagChunker(input_chunker)
         #Use chunker to chunk the tagged words and combine into a tree
-        self.tree = chunker.parse(tags)
-        sub_event_dict[self.key]['tagged'] = tags
-        sub_event_dict[self.key]['sent_tree'] = self.tree
+        self.tree = self.chunker.parse(tags)
+        sub_event_dict[key]['tagged'] = tags
+        sub_event_dict[key]['sent_tree'] = self.tree
 
         noun_phrases = self._get_np()
         verb_phrases = self._get_vp()
         time2 = datetime.now()
 
         time3 = time2-time1
-        sub_event_dict[self.key]['parse_chunk_time'] = time3
+        sub_event_dict[key]['parse_chunk_time'] = time3
 
-        sub_event_dict[self.key]['noun_phrases'] = noun_phrases
-        sub_event_dict[self.key]['verb_phrases'] = verb_phrases
+        sub_event_dict[key]['noun_phrases'] = noun_phrases
+        sub_event_dict[key]['verb_phrases'] = verb_phrases
 
         return sub_event_dict
 

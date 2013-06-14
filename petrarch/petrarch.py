@@ -1,8 +1,10 @@
-import parse
 import postprocess
 import argparse
 import pickle
+import parse
+import glob
 import os
+from ConfigParser import ConfigParser
 from datetime import datetime
 
 
@@ -82,8 +84,38 @@ PETRARCH
     return args
 
 
+def parse_config():
+    """Function to parse the config file for PETRARCH."""
+    config_file = glob.glob('config.ini')
+    parser = ConfigParser()
+    if config_file:
+        print 'Found a config file in working directory.'
+        parser.read(config_file)
+        try:
+            actors_file = parser.get('Dictionary Files', 'actors')
+            verbs_file = parser.get('Dictionary Files', 'verbs')
+            return actors_file, verbs_file
+        except Exception, e:
+            print 'Problem parsing config file. {}'.format(e)
+    else:
+        cwd = os.path.abspath(os.path.dirname(__file__))
+        config_file = os.path.join(cwd, 'default_config.ini')
+        parser.read(config_file)
+        print 'No config found. Using default.'
+        try:
+            actors_file = parser.get('Dictionary Files', 'actors')
+            verbs_file = parser.get('Dictionary Files', 'verbs')
+            actors_file = os.path.join(cwd, 'dictionaries', actors_file)
+            verbs_file = os.path.join(cwd, 'dictionaries', verbs_file)
+            return actors_file, verbs_file
+        except Exception, e:
+            print 'Problem parsing config file. {}'.format(e)
+
+
 def main():
     """Main function"""
+    actors, verbs = parse_config()
+
     cli_args = parse_cli_args()
     cli_command = cli_args.command_name
     inputs = cli_args.inputs
@@ -97,7 +129,7 @@ def main():
         ubt_chunker = pickle.load(open(chunk))
         tag = _get_data('maxent_treebank_pos_tagger.pickle')
         pos_tagger = pickle.load(open(tag))
-        print 'Reading sentences in...{}:{}.{}'.format(datetime.now().hour, datetime.now().minute, datetime.now().second)
+        print 'Reading in sentences...{}:{}.{}'.format(datetime.now().hour, datetime.now().minute, datetime.now().second)
         events = read_data(inputs)
         print 'Parsing sentences...{}:{}.{}'.format(datetime.now().hour, datetime.now().minute, datetime.now().second)
         parse.parse(events, ubt_chunker, pos_tagger, cli_args.n_cores)
@@ -115,6 +147,7 @@ def main():
             event_output += 'Noun phrases: \n {}\n'.format(events[event]['noun_phrases'])
             event_output += 'Verb phrases: \n {}\n\n'.format(events[event]['verb_phrases'])
             event_output += 'Parse time: \n {}\n'.format(events[event]['parse_chunk_time'])
+            #event_output += 'Instantiation time: \n {}\n'.format(events[event]['parse_call_time'])
             try:
                 event_output += '\nGeolocate: \n {}, {}\n'.format(events[event]['lat'],
                                                       events[event]['lon'])
