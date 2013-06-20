@@ -135,8 +135,7 @@ def main():
         parse.parse(events, ubt_chunker, pos_tagger, cli_args.n_cores)
         print 'Done processing...{}:{}.{}'.format(datetime.now().hour, datetime.now().minute, datetime.now().second)
         if geo_boolean or feature_boolean:
-            postprocess.process(events, pos_tagger, username, geo_boolean,
-                               feature_boolean)
+            postprocess.process(events, username, geo_boolean, feature_boolean)
         event_output = str()
         print 'Writing the events to file...'
         for event in events:
@@ -150,7 +149,7 @@ def main():
             #event_output += 'Instantiation time: \n {}\n'.format(events[event]['parse_call_time'])
             try:
                 event_output += '\nGeolocate: \n {}, {}\n'.format(events[event]['lat'],
-                                                      events[event]['lon'])
+                                                                  events[event]['lon'])
             except KeyError:
                 pass
             try:
