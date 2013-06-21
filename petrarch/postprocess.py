@@ -3,14 +3,15 @@ import nltk.stem
 from nltk import trigrams
 from joblib import Parallel, delayed
 
-
 def process(event_dict, username=None, geolocate=False, feature_extract=False):
 
     processed = list()
     for key in event_dict.keys():
-        tagged_sent = event_dict[key]['tagged']
-        temp = post_process(tagged_sent, key, geo=geolocate, username=username,
-                            feature=feature_extract)
+        tagged_sent  = event_dict[key]['tagged']
+        noun_phrases = event_dict[key]['noun_phrases']
+        verb_phrases = event_dict[key]['verb_phrases']
+        temp = post_process(tagged_sent, key, noun_phrases, verb_phrases, 
+            geo=geolocate, username=username, feature=feature_extract)                            
         processed.append(temp)
 
     for processed_sent in processed:
@@ -34,7 +35,7 @@ def process(event_dict, username=None, geolocate=False, feature_extract=False):
 #    post_processor = ProcessSuite(sent, key, input_tagger)
 #    processed_info = post_processor.post_process(geolocate, username, feature_extract)
 
-def post_process(pos_tagged, key, geo=False, username=None, feature=False):
+def post_process(pos_tagged, key, noun_phrases, verb_phrases, geo=False, username=None, feature=False):
     """
     Helper function to call the various post-processing functions, e.g.
     geolocation and feature extraction.
@@ -57,7 +58,9 @@ def post_process(pos_tagged, key, geo=False, username=None, feature=False):
         sub_event_dict[key]['lon'] = lon
 
     if feature:
-        sub_event_dict[key]['num_involved'] = num_involved(tri)
+        #_v_to_cd_dist(pos_tagged)
+        #sub_event_dict[key]['num_involved'] = []
+        sub_event_dict[key]['num_involved'] = num_involved(pos_tagged, noun_phrases, verb_phrases)
 
     return sub_event_dict
 
@@ -114,6 +117,25 @@ def geolocate(trigrams, username):
         lat, lon = 'NA', 'NA'
         return lat, lon
 
+def _is_number(numstr):
+    """
+    Private function to check whether a string is a number
+
+    Parameters
+    ------
+    numstr: String.
+            String to check.
+
+    Returns
+    ------
+        Boolean. True if string a number. False otherwise.
+    """
+    try:
+        float(numstr)
+        return True
+    except ValueError:
+        return False
+
 
 def _english_to_digit(textnum, numwords={}):
     """
@@ -130,12 +152,45 @@ def _english_to_digit(textnum, numwords={}):
     Returns
     -------
 
-    out: String.
-            Number represented as a digit.
+    out: Tuple.
+            The number represented as a digit, and the string describing
+            the type of object that the number is describing.
 
     """
 
+    ## TK: Need a way to deal with phrases likes "a few", "a number of",
+    ## "hundreds of thousands", etc
+    textnum = textnum.lower()
+
     if not numwords:
+        ## Adding fixed values here
+
+        ## TK: This is a placeholder for scale-type numbers
+        ## Need a better way to handle these. One solution is to have
+        ## a scale variable that assigns something like 5-25 for "several",
+        ## 50-99 for "dozens", etc.
+        approxs = {
+            "several"   : 5,
+            "tens"      : 50,
+            "dozens"    : 50,
+            "scores"    : 50,
+            "hundreds"  : 10 ** 2,
+            "thousands" : 10 ** 3,
+            "millions"  : 10 ** 6,
+            "billions"  : 10 ** 9,
+            "trillions" : 10 ** 12 
+        }
+
+        ## unused right now, but possibly in the future.
+        range_words = {
+            "several"   : "5-24",
+            "tens"      : "10-99",
+            "dozens"    : "50-99",
+            "scores"    : "50-99",
+            "hundreds"  : "100-999",
+            "thousands" : "1000-9999"
+        }
+
         units = [
             "zero", "one", "two", "three", "four", "five", "six", "seven",
             "eight", "nine", "ten", "eleven", "twelve", "thirteen",
@@ -145,57 +200,84 @@ def _english_to_digit(textnum, numwords={}):
         tens = ["", "", "twenty", "thirty", "forty", "fifty", "sixty",
                 "seventy", "eighty", "ninety"]
 
-        scales = ["hundred", "thousand", "million", "billion", "trillion"]
+        scales  = {
+            "hundred"  : 2,
+            "thousand" : 3, 
+            "million"  : 6,
+            "billion"  : 9,
+            "trillion" : 12
+            }
 
         numwords["and"] = (1, 0)
         for idx, word in enumerate(units):
             numwords[word] = (1, idx)
+
         for idx, word in enumerate(tens):
             numwords[word] = (1, idx * 10)
-        for idx, word in enumerate(scales):
-            numwords[word] = (10 ** (idx * 3 or 2), 0)
+
+        for word, exp in scales.iteritems():
+            numwords[word] = (10 ** exp, 0)
+
+        for word, number in approxs.iteritems():
+            numwords[word] = (1, number) 
 
     current = result = 0
+    type_words = []
     for word in textnum.split():
-        word = str.lower(word)
-        if word not in numwords:
-            raise Exception("Illegal word: " + word)
+        if _is_number(word):
+            current = float(word)
+        elif word in numwords:
+            scale, increment = numwords[word]
+            current = current * scale + increment
+            if scale > 100:
+                result += current
+                current = 0
+        else:            
+            type_words.append(word)
 
-        scale, increment = numwords[word]
-        current = current * scale + increment
-        if scale > 100:
-            result += current
-            current = 0
+    out = result + current
+    return (out, " ".join(type_words))
 
-    out = str(result + current)
-    return out
-
-
-def num_involved(trigrams):
+def num_involved(pos_tagged, noun_phrases, verb_phrases):
     """
     Function to obtain information regarding the number of individuals
     involved in a given event.
 
+    The algorithm works as follows:
+        Go through verb phrases and attempt to pull out number from direct object
+        and associate it with the verb phrase.
+
+        Then, go through noun phrases and look for a number.
+        If one exists, check if the noun phrase comes right before a verb phrase.
+        Assign the verb in that phrase to the number.
+
+
+    Parameters
+    ------
+
+    noun_phrases: List.
+                List of noun phrases.
+    verb_phrases: List.
+                List of tuples containing verbs and their direct objects.
+
     Returns
     -------
 
-    number: Integer.
-            Number of people involved in an event.
+    num_phrases: Array.
+            Array of tuples in the format (number, type, verb)
 
     """
-    #Create trigrams
-    number = str()
-    #Select words with cardinal number POS tags that are preceded or
-    #followed by verbs. This attemps to capture things such as '15 were
-    #killed' or '15 killed' or 'killed 15'.
-    for (w1, t1), (w2, t2), (w3, t3) in trigrams:
-        if (t1 == 'CD') and (t3.startswith('V') or t2.startswith('V')):
-            number = w1
-        elif ((t1.startswith('V') or (t2.startswith('V') or t2 == 'CD'))
-                and (t3 == 'CD')):
-            number = w3
-    try:
-        number = _english_to_digit(number)
-    except Exception:
-        pass
-    return int(number)
+
+    num_phrases = []
+    for verb, obj in verb_phrases:
+        ## TK: Eventually change this to account for numbers like
+        ## "two million"
+
+        num, type = _english_to_digit(obj)
+
+        if num:
+            num_phrases.append( (num, type, verb) )
+
+    ## TK: Need to implement the noun phrase part of this
+
+    return num_phrases
