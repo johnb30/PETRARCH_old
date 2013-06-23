@@ -1,8 +1,9 @@
-from nltk import chunk
-from nltk import word_tokenize
 import itertools
+import timex
 from joblib import Parallel, delayed
+from nltk import word_tokenize
 from datetime import datetime
+from nltk import chunk
 
 
 def parse(event_dict, input_chunker, input_tagger, cores):
@@ -78,13 +79,13 @@ class SentParse():
 
         """
         time1 = datetime.now()
+
+        time_words = self._tag_times(sent)
+
         sub_event_dict = {key: {}}
-        #Tokenize the words
         toks = word_tokenize(sent)
-        #Part-of-speech tag the tokens
         tags = self.input_tagger.tag(toks)
         tags = [tag for tag in tags if tag[1] != 'POS']
-        #Use chunker to chunk the tagged words and combine into a tree
         self.tree = self.chunker.parse(tags)
         sub_event_dict[key]['tagged'] = tags
         sub_event_dict[key]['sent_tree'] = self.tree
@@ -101,6 +102,42 @@ class SentParse():
 
         return sub_event_dict
 
+    def shift_time(self, time_words):
+        """
+        Function to create a timedelta object that shifts the date of an event 
+        as appropriate, according to words identified in `time_words`.
+
+        """
+        if 'week' in time_words:
+            print "It's a week!"
+
+    def _tag_times(self, sent):
+        """
+        Private function to identify time shifting words such as 'yesterday'
+        or 'last week'. Identifies words and returns the phrase.
+
+        Parameters
+        ----------
+
+        sent: String.
+              Sentence to parse.
+
+        Returns
+        -------
+
+        time_shift: List.
+                    List of words that indicate time shifting.
+
+        """
+        timed_sent = timex.tag(sent)
+        begin_index = timed_sent.find('<TIMEX2>')+8
+        end_index = timed_sent.find('</TIMEX2>')
+        if begin_index == -1:
+            return None
+        else:
+            time_shift = timed_sent[begin_index:end_index]
+            return time_shift.split()
+
     def _get_np(self):
         """
         Private function to extract noun phrases from a parse tree of any given
@@ -110,13 +147,13 @@ class SentParse():
         ----------
 
         tree: NLTK tree object.
-            Parse tree for a particular sentence.
+              Parse tree for a particular sentence.
 
         Returns
         -------
 
         noun_phrases: List.
-                    Noun phrases within a sentence.
+                      Noun phrases within a sentence.
         """
         noun_phrases = []
         for sub in self.tree.subtrees(filter=lambda x: x.node == 'NP'):

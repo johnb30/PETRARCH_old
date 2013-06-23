@@ -1,3 +1,4 @@
+import dateutil.parse
 import postprocess
 import argparse
 import pickle
@@ -35,6 +36,7 @@ def read_data(filepath):
         #info and story part of the string
         meta_string = sentence[:sentence.find('\n')]
         day, ident = meta_string.split()[:2]
+        day = dateutil.parse(day)
         story_string = sentence[sentence.find('\n'):].replace('\n', '')
         #Combine info into a dictionary
         story_info = {'day': day, 'id': ident, 'story': story_string}

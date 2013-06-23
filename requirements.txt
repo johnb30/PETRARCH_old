@@ -1,5 +1,7 @@
 PyYAML==3.10
+egenix-mx-base==3.2.6
 joblib==0.7.0d
 nltk==2.0.4
 numpy==1.7.1
 simplejson==3.3.0
+wsgiref==0.1.2
