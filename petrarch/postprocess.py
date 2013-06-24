@@ -3,6 +3,7 @@
 import geonames_api
 import nltk.stem
 from nltk import trigrams
+from nltk.corpus import stopwords
 from joblib import Parallel, delayed
 
 def process(event_dict, username=None, geolocate=False, feature_extract=False):
@@ -240,10 +241,14 @@ def _english_to_digit(textnum, numwords={}):
     current = result = 0
     type_words = []
     for word in textnum.split():
+        word = word.replace(',', '')
+
         ## test currency here
         c_tuple = _get_currency(word)
 
         if False:
+            pass
+        elif word in stopwords.words("english"):
             pass
         elif c_tuple:
             current = c_tuple[0]
@@ -273,9 +278,9 @@ def num_involved(pos_tagged, noun_phrases, verb_phrases):
         and associate it with the verb phrase.
 
         Then, go through noun phrases and look for a number.
-        If one exists, check if the noun phrase comes right before a verb phrase.
-        Assign the verb in that phrase to the number.
 
+        TK: It isn't clear how to assign a verb in this case if there are no
+        verb phrases in the data.
 
     Parameters
     ------
@@ -293,13 +298,23 @@ def num_involved(pos_tagged, noun_phrases, verb_phrases):
 
     """
 
-    num_phrases = []
-    for verb, obj in verb_phrases:
-        num, type = _english_to_digit(obj)
+    ## make this a dict so there are no repeats
+    phrases = {}
+
+    for verb, phrase in verb_phrases:
+        num, type = _english_to_digit(phrase)
 
         if num:
-            num_phrases.append( (num, type, verb) )
+            index = "-".join([str(num), type])
+            phrases[index] = (num, type, verb)
 
-    ## TK: Need to implement the noun phrase part of this
+    for phrase in noun_phrases:
+        num, type = _english_to_digit(phrase)
 
-    return num_phrases
+        if num:
+            ## TK: obtain the verb 
+            index = "-".join([str(num), type])
+            if index not in phrases:
+                phrases[index] = (num, type, None)
+
+    return phrases.values()
