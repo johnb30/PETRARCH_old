@@ -1,3 +1,5 @@
+# coding=utf-8
+
 import geonames_api
 import nltk.stem
 from nltk import trigrams
@@ -58,8 +60,6 @@ def post_process(pos_tagged, key, noun_phrases, verb_phrases, geo=False, usernam
         sub_event_dict[key]['lon'] = lon
 
     if feature:
-        #_v_to_cd_dist(pos_tagged)
-        #sub_event_dict[key]['num_involved'] = []
         sub_event_dict[key]['num_involved'] = num_involved(pos_tagged, noun_phrases, verb_phrases)
 
     return sub_event_dict
@@ -136,6 +136,29 @@ def _is_number(numstr):
     except ValueError:
         return False
 
+def _get_currency(numstr):
+    ## most popular currencies by code
+    currency_code = ['USD', 'GBP', 'EUR', 'JPY', 'CNY']
+    currency_sym  = ['$', '£', '¥', '€']
+
+    ## if the code appears by itself
+    if numstr in currency_sym or numstr in currency_code:
+        return (0, numstr)
+
+    ## currency codes can be appended
+    for c in currency_code:
+        if numstr.startswith(c) or numstr.endswith(c):
+            ## e.g. $20, 20USD
+            try:
+                ## remove the symbol, see if it is a number
+                numstr = numstr.strip(c)
+                if _is_number(numstr):
+                    return (float(numstr), c)
+            except Exception:
+                pass
+
+    ## otherwise return nothing
+    return None
 
 def _english_to_digit(textnum, numwords={}):
     """
@@ -158,37 +181,30 @@ def _english_to_digit(textnum, numwords={}):
 
     """
 
-    ## TK: Need a way to deal with phrases likes "a few", "a number of",
-    ## "hundreds of thousands", etc
-    textnum = textnum.lower()
-
     if not numwords:
         ## Adding fixed values here
 
-        ## TK: This is a placeholder for scale-type numbers
-        ## Need a better way to handle these. One solution is to have
-        ## a scale variable that assigns something like 5-25 for "several",
-        ## 50-99 for "dozens", etc.
+        ## Binning these based on a logarithmic-type scale
+        ## based on discussion here:
+        ## http://badhessian.org/2013/06/numerical-approximation-words-to-numbers/
         approxs = {
-            "several"   : 5,
-            "tens"      : 50,
-            "dozens"    : 50,
-            "scores"    : 50,
+            "few"       : 1,
+            "several"   : 1,
+            "tens"      : 10,
+            "dozen"     : 12,
+            "dozens"    : 10,
+            "scores"    : 10,
             "hundreds"  : 10 ** 2,
             "thousands" : 10 ** 3,
             "millions"  : 10 ** 6,
             "billions"  : 10 ** 9,
-            "trillions" : 10 ** 12 
-        }
+            "trillions" : 10 ** 12
 
-        ## unused right now, but possibly in the future.
-        range_words = {
-            "several"   : "5-24",
-            "tens"      : "10-99",
-            "dozens"    : "50-99",
-            "scores"    : "50-99",
-            "hundreds"  : "100-999",
-            "thousands" : "1000-9999"
+            ## compounds
+            ## TK: Not sure how to handle these
+            #"a small number"        : 1,
+            #"tens of thousands"     : 10000,
+            #"hundreds of thousands" : 100000
         }
 
         units = [
@@ -224,9 +240,18 @@ def _english_to_digit(textnum, numwords={}):
     current = result = 0
     type_words = []
     for word in textnum.split():
-        if _is_number(word):
+        ## test currency here
+        c_tuple = _get_currency(word)
+
+        if False:
+            pass
+        elif c_tuple:
+            current = c_tuple[0]
+            type_words.append(c_tuple[1])
+        elif _is_number(word):          
             current = float(word)
         elif word in numwords:
+            word = word.lower()
             scale, increment = numwords[word]
             current = current * scale + increment
             if scale > 100:
@@ -270,9 +295,6 @@ def num_involved(pos_tagged, noun_phrases, verb_phrases):
 
     num_phrases = []
     for verb, obj in verb_phrases:
-        ## TK: Eventually change this to account for numbers like
-        ## "two million"
-
         num, type = _english_to_digit(obj)
 
         if num:
