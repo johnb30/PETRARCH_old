@@ -1,10 +1,17 @@
 # coding=utf-8
 
+import os
 import geonames_api
 import nltk.stem
 from nltk import trigrams
-from nltk.corpus import stopwords
 from joblib import Parallel, delayed
+
+def _get_data(path):
+    """Private function to get the absolute path to the installed files."""
+    cwd = os.path.abspath(os.path.dirname(__file__))
+    return os.path.join(cwd, 'data', path)
+
+stopwords = _get_data("english_stopwords.pickle")
 
 def process(event_dict, username=None, geolocate=False, feature_extract=False):
 
@@ -13,7 +20,7 @@ def process(event_dict, username=None, geolocate=False, feature_extract=False):
         tagged_sent  = event_dict[key]['tagged']
         noun_phrases = event_dict[key]['noun_phrases']
         verb_phrases = event_dict[key]['verb_phrases']
-        temp = post_process(tagged_sent, key, noun_phrases, verb_phrases, 
+        temp = post_process(tagged_sent, key, noun_phrases, verb_phrases,
             geo=geolocate, username=username, feature=feature_extract)                            
         processed.append(temp)
 
@@ -248,7 +255,7 @@ def _english_to_digit(textnum, numwords={}):
 
         if False:
             pass
-        elif word in stopwords.words("english"):
+        elif word in stopwords:
             pass
         elif c_tuple:
             current = c_tuple[0]
