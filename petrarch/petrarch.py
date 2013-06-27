@@ -114,30 +114,38 @@ def parse_config():
 
 def main():
     """Main function"""
-    actors, verbs = parse_config()
-
-    cli_args = parse_cli_args()
-    cli_command = cli_args.command_name
-    inputs = cli_args.inputs
-    out_path = cli_args.output
-    username = cli_args.username
-    geo_boolean = cli_args.geolocate
+    actors, verbs   = parse_config()
+    cli_args        = parse_cli_args()
+    cli_command     = cli_args.command_name
+    inputs          = cli_args.inputs
+    out_path        = cli_args.output
+    username        = cli_args.username
+    geo_boolean     = cli_args.geolocate
     feature_boolean = cli_args.features
+
     if cli_command == 'parse':
         print 'Reading in data...{}:{}.{}'.format(datetime.now().now().hour, datetime.now().minute, datetime.now().second)
         chunk = _get_data('ubt_chunker_trained.pickle')
         ubt_chunker = pickle.load(open(chunk))
         tag = _get_data('maxent_treebank_pos_tagger.pickle')
         pos_tagger = pickle.load(open(tag))
+
         print 'Reading in sentences...{}:{}.{}'.format(datetime.now().hour, datetime.now().minute, datetime.now().second)
         events = read_data(inputs)
+
         print 'Parsing sentences...{}:{}.{}'.format(datetime.now().hour, datetime.now().minute, datetime.now().second)
         parse.parse(events, ubt_chunker, pos_tagger, cli_args.n_cores)
         print 'Done processing...{}:{}.{}'.format(datetime.now().hour, datetime.now().minute, datetime.now().second)
+
         if geo_boolean or feature_boolean:
+            print 'Feature extraction...{}:{}.{}'.format(datetime.now().hour, datetime.now().minute, datetime.now().second)
             postprocess.process(events, username, geo_boolean, feature_boolean)
+            print 'Done feature extraction...{}:{}.{}'.format(datetime.now().hour, datetime.now().minute, datetime.now().second)
+
         event_output = str()
+
         print 'Writing the events to file...'
+
         for event in events:
             event_output += '\n=======================\n\n'
             event_output += 'event id: {}\n\n'.format(event)
@@ -147,15 +155,13 @@ def main():
             event_output += 'Verb phrases: \n {}\n\n'.format(events[event]['verb_phrases'])
             event_output += 'Parse time: \n {}\n'.format(events[event]['parse_chunk_time'])
             #event_output += 'Instantiation time: \n {}\n'.format(events[event]['parse_call_time'])
-            try:
-                event_output += '\nGeolocate: \n {}, {}\n'.format(events[event]['lat'],
-                                                                  events[event]['lon'])
-            except KeyError:
-                pass
-            try:
+
+            if geo_boolean:
+                event_output += '\nGeolocate: \n {}, {}\n'.format(events[event]['lat'], events[event]['lon'])
+
+            if feature_boolean:
                 event_output += 'Feature extract: \n {}\n'.format(events[event]['num_involved'])
-            except KeyError:
-                pass
+
         with open(out_path, 'w') as f:
             f.write(event_output)
     else:

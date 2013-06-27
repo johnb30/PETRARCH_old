@@ -59,4 +59,4 @@ def test_feature_extract():
     parser = petrarch.parse.SentParse(ubt_chunker, pos_tagger)
     update = parser.parse_sent(sent, key)   
     petrarch.postprocess.process(update, feature_extract=True)
-    assert update['DEMO-01']['num_involved'] == 7
+    assert update['DEMO-01']['num_involved'] == [(7, 'yesterday', 'killed')]
