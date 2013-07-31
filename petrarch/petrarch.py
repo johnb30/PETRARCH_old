@@ -1,7 +1,6 @@
 import dateutil.parser
 import postprocess
 import argparse
-import pickle
 import parse
 import glob
 import os
@@ -94,6 +93,7 @@ def parse_config():
         print 'Found a config file in working directory.'
         parser.read(config_file)
         try:
+            cwd = os.getcwd()
             actors_file = parser.get('Dictionary Files', 'actors')
             verbs_file = parser.get('Dictionary Files', 'verbs')
             actors_file = os.path.join(cwd, 'dictionaries', actors_file)
@@ -120,7 +120,6 @@ def parse_config():
 
 def main():
     """Main function"""
-<<<<<<< HEAD
     actors, verbs, stanford_dir = parse_config()
 
     cli_args = parse_cli_args()
@@ -129,22 +128,15 @@ def main():
     out_path = cli_args.output
     username = cli_args.username
     geo_boolean = cli_args.geolocate
-=======
-    actors, verbs   = parse_config()
-    cli_args        = parse_cli_args()
-    cli_command     = cli_args.command_name
-    inputs          = cli_args.inputs
-    out_path        = cli_args.output
-    username        = cli_args.username
-    geo_boolean     = cli_args.geolocate
->>>>>>> upstream/master
+    cli_args = parse_cli_args()
+    cli_command = cli_args.command_name
+    inputs = cli_args.inputs
+    out_path = cli_args.output
+    username = cli_args.username
+    geo_boolean = cli_args.geolocate
     feature_boolean = cli_args.features
 
     if cli_command == 'parse':
-        print 'Reading in data...{}:{}.{}'.format(datetime.now().now().hour, datetime.now().minute, datetime.now().second)
-        tag = _get_data('maxent_treebank_pos_tagger.pickle')
-        pos_tagger = pickle.load(open(tag))
-
         print 'Reading in sentences...{}:{}.{}'.format(datetime.now().hour, datetime.now().minute, datetime.now().second)
         events = read_data(inputs)
 
@@ -160,7 +152,6 @@ def main():
         event_output = str()
 
         print 'Writing the events to file...'
-<<<<<<< HEAD
         for event in results:
             print 'Wrote key: {}'.format(event)
             event_output += '\n=======================\n\n'
@@ -178,32 +169,14 @@ def main():
                 pass
             try:
                 event_output += '\nGeolocate: \n {}, {}\n'.format(results[event]['lat'],
-                                                      results[event]['lon'])
+                                                                  results[event]['lon'])
             except KeyError:
                 pass
             try:
                 event_output += 'Feature extract: \n {}\n'.format(results[event]['num_involved'])
             except KeyError:
                 pass
-=======
 
-        for event in events:
-            event_output += '\n=======================\n\n'
-            event_output += 'event id: {}\n\n'.format(event)
-            event_output += 'POS tagged sent:\n {}\n\n'.format(events[event]['tagged'])
-            event_output += 'NP tagged sent:\n {}\n\n'.format(events[event]['sent_tree'])
-            event_output += 'Noun phrases: \n {}\n'.format(events[event]['noun_phrases'])
-            event_output += 'Verb phrases: \n {}\n\n'.format(events[event]['verb_phrases'])
-            event_output += 'Parse time: \n {}\n'.format(events[event]['parse_chunk_time'])
-            #event_output += 'Instantiation time: \n {}\n'.format(events[event]['parse_call_time'])
-
-            if geo_boolean:
-                event_output += '\nGeolocate: \n {}, {}\n'.format(events[event]['lat'], events[event]['lon'])
-
-            if feature_boolean:
-                event_output += 'Feature extract: \n {}\n'.format(events[event]['num_involved'])
-
->>>>>>> upstream/master
         with open(out_path, 'w') as f:
             f.write(event_output)
     else:
