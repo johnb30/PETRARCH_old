@@ -1,4 +1,4 @@
-import dateutil.parse
+import dateutil.parser
 import postprocess
 import argparse
 import pickle
@@ -36,7 +36,7 @@ def read_data(filepath):
         #info and story part of the string
         meta_string = sentence[:sentence.find('\n')]
         day, ident = meta_string.split()[:2]
-        day = dateutil.parse(day)
+        day = dateutil.parser.parse(day)
         story_string = sentence[sentence.find('\n'):].replace('\n', '')
         #Combine info into a dictionary
         story_info = {'day': day, 'id': ident, 'story': story_string}
@@ -96,7 +96,10 @@ def parse_config():
         try:
             actors_file = parser.get('Dictionary Files', 'actors')
             verbs_file = parser.get('Dictionary Files', 'verbs')
-            return actors_file, verbs_file
+            actors_file = os.path.join(cwd, 'dictionaries', actors_file)
+            verbs_file = os.path.join(cwd, 'dictionaries', verbs_file)
+            stanfordnlp = parser.get('StanfordNLP', 'stanford_dir')
+            return actors_file, verbs_file, stanfordnlp
         except Exception, e:
             print 'Problem parsing config file. {}'.format(e)
     else:
@@ -109,14 +112,15 @@ def parse_config():
             verbs_file = parser.get('Dictionary Files', 'verbs')
             actors_file = os.path.join(cwd, 'dictionaries', actors_file)
             verbs_file = os.path.join(cwd, 'dictionaries', verbs_file)
-            return actors_file, verbs_file
+            stanfordnlp = parser.get('StanfordNLP', 'stanford_dir')
+            return actors_file, verbs_file, stanfordnlp
         except Exception, e:
             print 'Problem parsing config file. {}'.format(e)
 
 
 def main():
     """Main function"""
-    actors, verbs = parse_config()
+    actors, verbs, stanford_dir = parse_config()
 
     cli_args = parse_cli_args()
     cli_command = cli_args.command_name
@@ -127,36 +131,40 @@ def main():
     feature_boolean = cli_args.features
     if cli_command == 'parse':
         print 'Reading in data...{}:{}.{}'.format(datetime.now().now().hour, datetime.now().minute, datetime.now().second)
-        chunk = _get_data('ubt_chunker_trained.pickle')
-        ubt_chunker = pickle.load(open(chunk))
         tag = _get_data('maxent_treebank_pos_tagger.pickle')
         pos_tagger = pickle.load(open(tag))
         print 'Reading in sentences...{}:{}.{}'.format(datetime.now().hour, datetime.now().minute, datetime.now().second)
         events = read_data(inputs)
         print 'Parsing sentences...{}:{}.{}'.format(datetime.now().hour, datetime.now().minute, datetime.now().second)
-        parse.parse(events, ubt_chunker, pos_tagger, cli_args.n_cores)
+        results = parse.parse(events, stanford_dir, cli_args.n_cores)
         print 'Done processing...{}:{}.{}'.format(datetime.now().hour, datetime.now().minute, datetime.now().second)
         if geo_boolean or feature_boolean:
             postprocess.process(events, pos_tagger, username, geo_boolean,
                                feature_boolean)
         event_output = str()
         print 'Writing the events to file...'
-        for event in events:
+        for event in results:
+            print 'Wrote key: {}'.format(event)
             event_output += '\n=======================\n\n'
             event_output += 'event id: {}\n\n'.format(event)
-            event_output += 'POS tagged sent:\n {}\n\n'.format(events[event]['tagged'])
-            event_output += 'NP tagged sent:\n {}\n\n'.format(events[event]['sent_tree'])
-            event_output += 'Noun phrases: \n {}\n'.format(events[event]['noun_phrases'])
-            event_output += 'Verb phrases: \n {}\n\n'.format(events[event]['verb_phrases'])
-            event_output += 'Parse time: \n {}\n'.format(events[event]['parse_chunk_time'])
-            #event_output += 'Instantiation time: \n {}\n'.format(events[event]['parse_call_time'])
             try:
-                event_output += '\nGeolocate: \n {}, {}\n'.format(events[event]['lat'],
-                                                      events[event]['lon'])
+                event_output += 'Word info:\n {}\n\n'.format(results[event]['word_info'])
+                event_output += 'Parse tree:\n {}\n\n'.format(results[event]['parse_tree'])
+                event_output += 'Word dependencies:\n {}\n\n'.format(results[event]['dependencies'])
+            except KeyError:
+                print 'There was a key error'
+                print results[event].keys()
+            try:
+                event_output += 'Coref info:\n {}\n\n'.format(results[event]['corefs'])
             except KeyError:
                 pass
             try:
-                event_output += 'Feature extract: \n {}\n'.format(events[event]['num_involved'])
+                event_output += '\nGeolocate: \n {}, {}\n'.format(results[event]['lat'],
+                                                      results[event]['lon'])
+            except KeyError:
+                pass
+            try:
+                event_output += 'Feature extract: \n {}\n'.format(results[event]['num_involved'])
             except KeyError:
                 pass
         with open(out_path, 'w') as f:
