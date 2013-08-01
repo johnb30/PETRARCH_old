@@ -1,4 +1,3 @@
-import dateutil.parser
 import postprocess
 import argparse
 import parse
