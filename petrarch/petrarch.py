@@ -193,7 +193,8 @@ def main():
             chunks.append(dict(events.items()[i:i+chunk_size]))
 
         print 'Parsing sentences...{}:{}.{}'.format(datetime.now().hour, datetime.now().minute, datetime.now().second)
-        jobs = [job_server.submit(parse.parse, (chunk, stanford_dir,), (), ("corenlp","nltk.tree")) for chunk in chunks]
+        jobs = [job_server.submit(parse.parse, (chunk, stanford_dir,), (),
+                                  ("corenlp","nltk.tree",)) for chunk in chunks]
 
         results = list()
         for job in jobs:

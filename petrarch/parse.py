@@ -24,11 +24,10 @@ def parse(event_dict, stanford_dir):
     return output_dict
 
 def _get_np(parse_tree):
-    print type(parse_tree)
     phrases = list()
     words = list()
     output = dict()
-    for node in parse_tree(filter=lambda x: x.node == 'NP'):
+    for node in parse_tree.subtrees(filter=lambda x: x.node == 'NP'):
         phrases.append(node)
         for word in node.leaves():
             words.append(word)
@@ -42,7 +41,7 @@ def _get_vp(parse_tree):
     phrases = list()
     words = list()
     output = dict()
-    for node in parse_tree(filter=lambda x: x.node == 'NP'):
+    for node in parse_tree.subtrees(filter=lambda x: x.node == 'NP'):
         phrases.append(node)
         for word in node.leaves():
             words.append(word)
