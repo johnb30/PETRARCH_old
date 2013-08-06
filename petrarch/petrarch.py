@@ -118,7 +118,7 @@ def parse_config():
             actors_file = os.path.join(cwd, 'dictionaries', actors_file)
             verbs_file = os.path.join(cwd, 'dictionaries', verbs_file)
             direct = parser.get('StanfordNLP', 'stanford_dir')
-            stanfordnlp = os.path.abspath(direct)
+            stanfordnlp = os.path.expanduser(direct)
             return actors_file, verbs_file, stanfordnlp
         except Exception, e:
             print 'Problem parsing config file. {}'.format(e)
@@ -133,7 +133,7 @@ def parse_config():
             actors_file = os.path.join(cwd, 'dictionaries', actors_file)
             verbs_file = os.path.join(cwd, 'dictionaries', verbs_file)
             direct = parser.get('StanfordNLP', 'stanford_dir')
-            stanfordnlp = os.path.abspath(direct)
+            stanfordnlp = os.path.expanduser(direct)
             return actors_file, verbs_file, stanfordnlp
         except Exception, e:
             print 'Problem parsing config file. {}'.format(e)
@@ -148,7 +148,8 @@ def main():
     inputs = cli_args.inputs
     out_path = cli_args.output
     username = cli_args.username
-    cpus = cli_args.n_cores
+    if cli_command == 'parallel_parse':
+        cpus = cli_args.n_cores
     geo_boolean = cli_args.geolocate
     feature_boolean = cli_args.features
 
@@ -169,6 +170,9 @@ def main():
             print 'Done feature extraction...{}:{}.{}'.format(datetime.now().hour, datetime.now().minute, datetime.now().second)
     elif cli_command == 'parallel_parse':
         import pp
+        import corenlp
+        import nltk.tree
+
         print 'Reading in sentences...{}:{}.{}'.format(datetime.now().hour, datetime.now().minute, datetime.now().second)
         events = read_data(inputs)
 
@@ -189,9 +193,8 @@ def main():
             chunks.append(dict(events.items()[i:i+chunk_size]))
 
         print 'Parsing sentences...{}:{}.{}'.format(datetime.now().hour, datetime.now().minute, datetime.now().second)
-        jobs = [job_server.submit(parse.parse, (chunk,stanford_dir), 
-                                  (parse._get_np, parse._get_vp), ("corenlp",))
-                for chunk in chunks]
+        jobs = [job_server.submit(parse.parse, (chunk, stanford_dir,), (), ("corenlp","nltk.tree")) for chunk in chunks]
+
         results = list()
         for job in jobs:
             results.append(job())
@@ -213,7 +216,6 @@ def main():
 
     print 'Writing the events to file...'
     for event in events:
-        print 'Wrote key: {}'.format(event)
         event_output += '\n=======================\n\n'
         event_output += 'event id: {}\n\n'.format(event)
         try:
@@ -223,6 +225,7 @@ def main():
         except KeyError:
             print 'There was a key error'
             print events[event].keys()
+            print events[event]['story']
         try:
             event_output += 'Coref info:\n {}\n\n'.format(events[event]['corefs'])
         except KeyError:
