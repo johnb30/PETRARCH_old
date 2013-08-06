@@ -1,7 +1,7 @@
 from corenlp import StanfordCoreNLP
 from nltk.tree import Tree
 
-def parse(event_dict, stanford_dir, cores):
+def parse(event_dict, stanford_dir):
     output_dict = dict()
     corenlp_dir = stanford_dir
     corenlp = StanfordCoreNLP(corenlp_dir)
@@ -15,9 +15,9 @@ def parse(event_dict, stanford_dir, cores):
         if len(result['sentences']) == 1:
             output_dict[key]['parse_tree'] = (result['sentences'][0]
                                               ['parsetree'])
-            tree = Tree(result['sentences'][0]['parsetree']
-            output_dict[key]['word_info'] = (result['sentences'][0]
-                                             ['words'])
+            tree = Tree(result['sentences'][0]['parsetree'])
+            output_dict[key]['word_info'] = (result['sentences']
+                                             [0]['words'])
             output_dict[key]['dependencies'] = (result['sentences'][0]
                                                 ['dependencies'])
             output_dict[key].update(_get_np(tree))

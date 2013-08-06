@@ -1,3 +1,4 @@
+import dateutil.parser
 import postprocess
 import argparse
 import parse
@@ -73,13 +74,32 @@ PETRARCH
                                default=False,
                                help="""Whether to extract features from
                                sentence. Defaults to False""")
-    parse_command.add_argument('-n', '--n_cores', type=int, default=-1,
+
+    parallel_command = sub_parse.add_parser('parallel_parse', 
+                                            help="""Command to run the 
+                                            PETRARCH parser in parallel.""",
+                                            description="""Command to run the 
+                                            PETRARCH parser in parallel.""")
+    parallel_command.add_argument('-i', '--inputs',
+                               help='File, or directory of files, to parse.',
+                               required=True)
+    parallel_command.add_argument('-o', '--output',
+                               help='File to write parsed events',
+                               required=True)
+    parallel_command.add_argument('-u', '--username',
+                               help="geonames.org username", default=None)
+    parallel_command.add_argument('-G', '--geolocate', action='store_true',
+                               default=False, help="""Whether to geolocate
+                               events. Defaults to False""")
+    parallel_command.add_argument('-F', '--features', action='store_true',
+                               default=False,
+                               help="""Whether to extract features from
+                               sentence. Defaults to False""")
+    parallel_command.add_argument('-n', '--n_cores', type=int, default=-1,
                                help="""Number of cores to use for parallel
                                processing. parse_command to -1 for all
                                cores""")
-
-    temp_command = sub_parse.add_parser('temp', help="""Placeholder.""",
-                                        description="""Placeholder.""")
+    
     args = aparse.parse_args()
     return args
 
@@ -97,7 +117,8 @@ def parse_config():
             verbs_file = parser.get('Dictionary Files', 'verbs')
             actors_file = os.path.join(cwd, 'dictionaries', actors_file)
             verbs_file = os.path.join(cwd, 'dictionaries', verbs_file)
-            stanfordnlp = parser.get('StanfordNLP', 'stanford_dir')
+            direct = parser.get('StanfordNLP', 'stanford_dir')
+            stanfordnlp = os.path.abspath(direct)
             return actors_file, verbs_file, stanfordnlp
         except Exception, e:
             print 'Problem parsing config file. {}'.format(e)
@@ -111,7 +132,8 @@ def parse_config():
             verbs_file = parser.get('Dictionary Files', 'verbs')
             actors_file = os.path.join(cwd, 'dictionaries', actors_file)
             verbs_file = os.path.join(cwd, 'dictionaries', verbs_file)
-            stanfordnlp = parser.get('StanfordNLP', 'stanford_dir')
+            direct = parser.get('StanfordNLP', 'stanford_dir')
+            stanfordnlp = os.path.abspath(direct)
             return actors_file, verbs_file, stanfordnlp
         except Exception, e:
             print 'Problem parsing config file. {}'.format(e)
@@ -126,12 +148,7 @@ def main():
     inputs = cli_args.inputs
     out_path = cli_args.output
     username = cli_args.username
-    geo_boolean = cli_args.geolocate
-    cli_args = parse_cli_args()
-    cli_command = cli_args.command_name
-    inputs = cli_args.inputs
-    out_path = cli_args.output
-    username = cli_args.username
+    cpus = cli_args.n_cores
     geo_boolean = cli_args.geolocate
     feature_boolean = cli_args.features
 
@@ -140,46 +157,89 @@ def main():
         events = read_data(inputs)
 
         print 'Parsing sentences...{}:{}.{}'.format(datetime.now().hour, datetime.now().minute, datetime.now().second)
-        results = parse.parse(events, stanford_dir, cli_args.n_cores)
+        results = parse.parse(events, stanford_dir)
+        for key in results:
+            events[key].update(results[key])
+        del results
         print 'Done processing...{}:{}.{}'.format(datetime.now().hour, datetime.now().minute, datetime.now().second)
 
         if geo_boolean or feature_boolean:
             print 'Feature extraction...{}:{}.{}'.format(datetime.now().hour, datetime.now().minute, datetime.now().second)
             postprocess.process(events, username, geo_boolean, feature_boolean)
             print 'Done feature extraction...{}:{}.{}'.format(datetime.now().hour, datetime.now().minute, datetime.now().second)
+    elif cli_command == 'parallel_parse':
+        import pp
+        print 'Reading in sentences...{}:{}.{}'.format(datetime.now().hour, datetime.now().minute, datetime.now().second)
+        events = read_data(inputs)
 
-        event_output = str()
+        ppservers = ()
+        if cpus == -1:
+            job_server = pp.Server(ppservers=ppservers)
+        else:
+            job_server = pp.Server(cpus, ppservers=ppservers)
 
-        print 'Writing the events to file...'
-        for event in results:
-            print 'Wrote key: {}'.format(event)
-            event_output += '\n=======================\n\n'
-            event_output += 'event id: {}\n\n'.format(event)
-            try:
-                event_output += 'Word info:\n {}\n\n'.format(results[event]['word_info'])
-                event_output += 'Parse tree:\n {}\n\n'.format(results[event]['parse_tree'])
-                event_output += 'Word dependencies:\n {}\n\n'.format(results[event]['dependencies'])
-            except KeyError:
-                print 'There was a key error'
-                print results[event].keys()
-            try:
-                event_output += 'Coref info:\n {}\n\n'.format(results[event]['corefs'])
-            except KeyError:
-                pass
-            try:
-                event_output += '\nGeolocate: \n {}, {}\n'.format(results[event]['lat'],
-                                                                  results[event]['lon'])
-            except KeyError:
-                pass
-            try:
-                event_output += 'Feature extract: \n {}\n'.format(results[event]['num_involved'])
-            except KeyError:
-                pass
+        chunks = list()
 
-        with open(out_path, 'w') as f:
-            f.write(event_output)
+        if len(events) % int(len(events) / (job_server.get_ncpus())) == 1:
+            chunk_size = int(len(events) / (job_server.get_ncpus()-1))
+        else:
+            chunk_size = int(len(events) / (job_server.get_ncpus()))
+
+        for i in xrange(0, len(events), chunk_size):
+            chunks.append(dict(events.items()[i:i+chunk_size]))
+
+        print 'Parsing sentences...{}:{}.{}'.format(datetime.now().hour, datetime.now().minute, datetime.now().second)
+        jobs = [job_server.submit(parse.parse, (chunk,stanford_dir), 
+                                  (parse._get_np, parse._get_vp), ("corenlp",))
+                for chunk in chunks]
+        results = list()
+        for job in jobs:
+            results.append(job())
+
+        for chunk in results:
+            for key in chunk:
+                events[key].update(chunk[key])
+        del results
+        print 'Done processing...{}:{}.{}'.format(datetime.now().hour, datetime.now().minute, datetime.now().second)
+
+        if geo_boolean or feature_boolean:
+            print 'Feature extraction...{}:{}.{}'.format(datetime.now().hour, datetime.now().minute, datetime.now().second)
+            postprocess.process(events, username, geo_boolean, feature_boolean)
+            print 'Done feature extraction...{}:{}.{}'.format(datetime.now().hour, datetime.now().minute, datetime.now().second)
     else:
         print 'Please enter a valid command!'
+
+    event_output = str()
+
+    print 'Writing the events to file...'
+    for event in events:
+        print 'Wrote key: {}'.format(event)
+        event_output += '\n=======================\n\n'
+        event_output += 'event id: {}\n\n'.format(event)
+        try:
+            event_output += 'Word info:\n {}\n\n'.format(events[event]['word_info'])
+            event_output += 'Parse tree:\n {}\n\n'.format(events[event]['parse_tree'])
+            event_output += 'Word dependencies:\n {}\n\n'.format(events[event]['dependencies'])
+        except KeyError:
+            print 'There was a key error'
+            print events[event].keys()
+        try:
+            event_output += 'Coref info:\n {}\n\n'.format(events[event]['corefs'])
+        except KeyError:
+            pass
+        try:
+            event_output += '\nGeolocate: \n {}, {}\n'.format(events[event]['lat'],
+                                                                events[event]['lon'])
+        except KeyError:
+            pass
+        try:
+            event_output += 'Feature extract: \n {}\n'.format(events[event]['num_involved'])
+        except KeyError:
+            pass
+
+    with open(out_path, 'w') as f:
+        f.write(event_output)
+
 
 
 if __name__ == '__main__':
