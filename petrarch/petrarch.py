@@ -23,8 +23,8 @@ def read_data(filepath):
     Parameters
     ----------
 
-    filepath: String.   Filepath of the file containing the sentence to be
-    parsed.
+    filepath : String
+                Filepath of the file containing the sentence to be parsed.
 
     """
     event_dict = dict()
@@ -75,31 +75,29 @@ PETRARCH
                                help="""Whether to extract features from
                                sentence. Defaults to False""")
 
-    parallel_command = sub_parse.add_parser('parallel_parse', 
-                                            help="""Command to run the 
+    parallel_command = sub_parse.add_parser('parallel_parse',
+                                            help="""Command to run the
                                             PETRARCH parser in parallel.""",
-                                            description="""Command to run the 
+                                            description="""Command to run the
                                             PETRARCH parser in parallel.""")
     parallel_command.add_argument('-i', '--inputs',
-                               help='File, or directory of files, to parse.',
-                               required=True)
-    parallel_command.add_argument('-o', '--output',
-                               help='File to write parsed events',
-                               required=True)
+                                  help="""File, or directory of files, to
+                                  parse.""", required=True)
+    parallel_command.add_argument('-o', '--output', help="""File to write
+                                  parsed events""", required=True)
     parallel_command.add_argument('-u', '--username',
-                               help="geonames.org username", default=None)
+                                  help="geonames.org username", default=None)
     parallel_command.add_argument('-G', '--geolocate', action='store_true',
-                               default=False, help="""Whether to geolocate
-                               events. Defaults to False""")
+                                  default=False, help="""Whether to geolocate
+                                  events. Defaults to False""")
     parallel_command.add_argument('-F', '--features', action='store_true',
-                               default=False,
-                               help="""Whether to extract features from
-                               sentence. Defaults to False""")
+                                  default=False, help="""Whether to extract
+                                  features from sentence. Defaults to False""")
     parallel_command.add_argument('-n', '--n_cores', type=int, default=-1,
-                               help="""Number of cores to use for parallel
-                               processing. parse_command to -1 for all
-                               cores""")
-    
+                                  help="""Number of cores to use for parallel
+                                  processing. parse_command to -1 for all
+                                  cores""")
+
     args = aparse.parse_args()
     return args
 
@@ -154,26 +152,36 @@ def main():
     feature_boolean = cli_args.features
 
     if cli_command == 'parse':
-        print 'Reading in sentences...{}:{}.{}'.format(datetime.now().hour, datetime.now().minute, datetime.now().second)
+        print 'Reading in sentences...{}:{}.{}'.format(datetime.now().hour,
+                                                       datetime.now().minute,
+                                                       datetime.now().second)
         events = read_data(inputs)
 
-        print 'Parsing sentences...{}:{}.{}'.format(datetime.now().hour, datetime.now().minute, datetime.now().second)
+        print 'Parsing sentences...{}:{}.{}'.format(datetime.now().hour,
+                                                    datetime.now().minute,
+                                                    datetime.now().second)
         results = parse.parse(events, stanford_dir)
         for key in results:
             events[key].update(results[key])
         del results
-        print 'Done processing...{}:{}.{}'.format(datetime.now().hour, datetime.now().minute, datetime.now().second)
+        print 'Done processing...{}:{}.{}'.format(datetime.now().hour,
+                                                  datetime.now().minute,
+                                                  datetime.now().second)
 
         if geo_boolean or feature_boolean:
-            print 'Feature extraction...{}:{}.{}'.format(datetime.now().hour, datetime.now().minute, datetime.now().second)
+            print 'Feature extraction...{}:{}.{}'.format(datetime.now().hour,
+                                                         datetime.now().minute,
+                                                         datetime.now().second)
             postprocess.process(events, username, geo_boolean, feature_boolean)
-            print 'Done feature extraction...{}:{}.{}'.format(datetime.now().hour, datetime.now().minute, datetime.now().second)
+            print 'Done...{}:{}.{}'.format(datetime.now().hour,
+                                           datetime.now().minute,
+                                           datetime.now().second)
     elif cli_command == 'parallel_parse':
         import pp
-        import corenlp
-        import nltk.tree
 
-        print 'Reading in sentences...{}:{}.{}'.format(datetime.now().hour, datetime.now().minute, datetime.now().second)
+        print 'Reading in sentences...{}:{}.{}'.format(datetime.now().hour,
+                                                       datetime.now().minute,
+                                                       datetime.now().second)
         events = read_data(inputs)
 
         ppservers = ()
@@ -192,9 +200,12 @@ def main():
         for i in xrange(0, len(events), chunk_size):
             chunks.append(dict(events.items()[i:i+chunk_size]))
 
-        print 'Parsing sentences...{}:{}.{}'.format(datetime.now().hour, datetime.now().minute, datetime.now().second)
+        print 'Parsing sentences...{}:{}.{}'.format(datetime.now().hour,
+                                                    datetime.now().minute,
+                                                    datetime.now().second)
         jobs = [job_server.submit(parse.parse, (chunk, stanford_dir,), (),
-                                  ("corenlp","nltk.tree",)) for chunk in chunks]
+                                  ("corenlp", "nltk.tree", "utilities",))
+                for chunk in chunks]
 
         results = list()
         for job in jobs:
@@ -204,12 +215,18 @@ def main():
             for key in chunk:
                 events[key].update(chunk[key])
         del results
-        print 'Done processing...{}:{}.{}'.format(datetime.now().hour, datetime.now().minute, datetime.now().second)
+        print 'Done processing...{}:{}.{}'.format(datetime.now().hour,
+                                                  datetime.now().minute,
+                                                  datetime.now().second)
 
         if geo_boolean or feature_boolean:
-            print 'Feature extraction...{}:{}.{}'.format(datetime.now().hour, datetime.now().minute, datetime.now().second)
+            print 'Feature extraction...{}:{}.{}'.format(datetime.now().hour,
+                                                         datetime.now().minute,
+                                                         datetime.now().second)
             postprocess.process(events, username, geo_boolean, feature_boolean)
-            print 'Done feature extraction...{}:{}.{}'.format(datetime.now().hour, datetime.now().minute, datetime.now().second)
+            print 'Donel..{}:{}.{}'.format(datetime.now().hour,
+                                           datetime.now().minute,
+                                           datetime.now().second)
     else:
         print 'Please enter a valid command!'
 
@@ -233,7 +250,7 @@ def main():
             pass
         try:
             event_output += '\nGeolocate: \n {}, {}\n'.format(events[event]['lat'],
-                                                                events[event]['lon'])
+                                                              events[event]['lon'])
         except KeyError:
             pass
         try:
@@ -243,7 +260,6 @@ def main():
 
     with open(out_path, 'w') as f:
         f.write(event_output)
-
 
 
 if __name__ == '__main__':

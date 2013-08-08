@@ -5,6 +5,7 @@ import geonames_api
 import nltk.stem
 from nltk import trigrams
 
+
 def _get_data(path):
     """Private function to get the absolute path to the installed files."""
     cwd = os.path.abspath(os.path.dirname(__file__))
@@ -12,22 +13,26 @@ def _get_data(path):
 
 stopwords = _get_data("english_stopwords.pickle")
 
+
 def process(event_dict, username=None, geolocate=False, feature_extract=False):
 
     processed = list()
     for key in event_dict.keys():
-        tagged_sent  = event_dict[key]['tagged']
+        tagged_sent = event_dict[key]['tagged']
         noun_phrases = event_dict[key]['noun_phrases']
         verb_phrases = event_dict[key]['verb_phrases']
         temp = post_process(tagged_sent, key, noun_phrases, verb_phrases,
-            geo=geolocate, username=username, feature=feature_extract)                            
+                            geo=geolocate, username=username,
+                            feature=feature_extract)
         processed.append(temp)
 
     for processed_sent in processed:
         key = processed_sent.keys()[0]
         event_dict[key].update(processed_sent[key])
 
-def post_process(pos_tagged, key, noun_phrases, verb_phrases, geo=False, username=None, feature=False):
+
+def post_process(pos_tagged, key, noun_phrases, verb_phrases, geo=False,
+                 username=None, feature=False):
     """
     Helper function to call the various post-processing functions, e.g.
     geolocation and feature extraction.
@@ -50,7 +55,9 @@ def post_process(pos_tagged, key, noun_phrases, verb_phrases, geo=False, usernam
         sub_event_dict[key]['lon'] = lon
 
     if feature:
-        sub_event_dict[key]['num_involved'] = num_involved(pos_tagged, noun_phrases, verb_phrases)
+        sub_event_dict[key]['num_involved'] = num_involved(pos_tagged,
+                                                           noun_phrases,
+                                                           verb_phrases)
 
     return sub_event_dict
 
@@ -107,6 +114,7 @@ def geolocate(trigrams, username):
         lat, lon = 'NA', 'NA'
         return lat, lon
 
+
 def _is_number(numstr):
     """
     Private function to check whether a string is a number
@@ -126,10 +134,11 @@ def _is_number(numstr):
     except ValueError:
         return False
 
+
 def _get_currency(numstr):
     ## most popular currencies by code
     currency_code = ['USD', 'GBP', 'EUR', 'JPY', 'CNY']
-    currency_sym  = ['$', '£', '¥', '€']
+    currency_sym = ['$', '£', '¥', '€']
 
     ## if the code appears by itself
     if numstr in currency_sym or numstr in currency_code:
@@ -149,6 +158,7 @@ def _get_currency(numstr):
 
     ## otherwise return nothing
     return None
+
 
 def _english_to_digit(textnum, numwords={}):
     """
@@ -206,13 +216,13 @@ def _english_to_digit(textnum, numwords={}):
         tens = ["", "", "twenty", "thirty", "forty", "fifty", "sixty",
                 "seventy", "eighty", "ninety"]
 
-        scales  = {
+        scales = {
             "hundred"  : 2,
-            "thousand" : 3, 
+            "thousand" : 3,
             "million"  : 6,
             "billion"  : 9,
             "trillion" : 12
-            }
+                }
 
         numwords["and"] = (1, 0)
         for idx, word in enumerate(units):
@@ -225,7 +235,7 @@ def _english_to_digit(textnum, numwords={}):
             numwords[word] = (10 ** exp, 0)
 
         for word, number in approxs.iteritems():
-            numwords[word] = (1, number) 
+            numwords[word] = (1, number)
 
     current = result = 0
     type_words = []
@@ -242,7 +252,7 @@ def _english_to_digit(textnum, numwords={}):
         elif c_tuple:
             current = c_tuple[0]
             type_words.append(c_tuple[1])
-        elif _is_number(word):          
+        elif _is_number(word):
             current = float(word)
         elif word in numwords:
             word = word.lower()
@@ -251,11 +261,12 @@ def _english_to_digit(textnum, numwords={}):
             if scale > 100:
                 result += current
                 current = 0
-        else:            
+        else:
             type_words.append(word)
 
     out = result + current
     return (out, " ".join(type_words))
+
 
 def num_involved(pos_tagged, noun_phrases, verb_phrases):
     """
@@ -263,8 +274,8 @@ def num_involved(pos_tagged, noun_phrases, verb_phrases):
     involved in a given event.
 
     The algorithm works as follows:
-        Go through verb phrases and attempt to pull out number from direct object
-        and associate it with the verb phrase.
+        Go through verb phrases and attempt to pull out number from direct
+        object and associate it with the verb phrase.
 
         Then, go through noun phrases and look for a number.
 
@@ -274,15 +285,15 @@ def num_involved(pos_tagged, noun_phrases, verb_phrases):
     Parameters
     ------
 
-    noun_phrases: List.
+    noun_phrases : List
                 List of noun phrases.
-    verb_phrases: List.
+    verb_phrases : List
                 List of tuples containing verbs and their direct objects.
 
     Returns
     -------
 
-    num_phrases: Array.
+    num_phrases : Array
             Array of tuples in the format (number, type, verb)
 
     """
@@ -301,7 +312,7 @@ def num_involved(pos_tagged, noun_phrases, verb_phrases):
         num, type = _english_to_digit(phrase)
 
         if num:
-            ## TK: obtain the verb 
+            ## TK: obtain the verb
             index = "-".join([str(num), type])
             if index not in phrases:
                 phrases[index] = (num, type, None)
