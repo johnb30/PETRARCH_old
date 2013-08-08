@@ -194,7 +194,7 @@ class Coder():
 
         Parameters
         ----------
-        
+
         parse_tree : NLTK.tree object
                     Parse tree for a given sentence.
 

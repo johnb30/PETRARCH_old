@@ -1,6 +1,7 @@
 import utilities
 import corenlp
-import nltk.tree 
+import nltk.tree
+
 
 def parse(event_dict, stanford_dir):
     """Function to parse sentences using StanfordNLP.
@@ -17,10 +18,10 @@ def parse(event_dict, stanford_dir):
     --------
 
     output_dict : Dictionary
-                  Dictionary with story ID as key and a dictionary as the value.
-                  Within the value dictionary are keys 'parse_tree', 'word_info',
-                  'dependencies', and, optionally, 'corefs'.
- 
+                  Dictionary with story ID as key and a dictionary as the
+                  value. Within the value dictionary are keys 'parse_tree',
+                  'word_info', 'dependencies', and, optionally, 'corefs'.
+
     """
     output_dict = dict()
     corenlp_dir = stanford_dir
