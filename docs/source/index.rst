@@ -9,12 +9,11 @@ Welcome to PETRARCH's documentation!
 Contents:
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 2
 
    About
    Tutorial
    Modules
-
 
 Indices and tables
 ==================

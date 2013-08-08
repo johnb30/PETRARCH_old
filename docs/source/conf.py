@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # PETRARCH documentation build configuration file, created by
-# sphinx-quickstart on Tue May 21 20:35:48 2013.
+# sphinx-quickstart on Wed Aug  7 19:29:27 2013.
 #
 # This file is execfile()d with the current directory set to its containing dir.
 #
@@ -12,11 +12,12 @@
 # serve to show the default.
 
 import sys, os
+import sphinx_bootstrap_theme
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.abspath('../petrarch/'))
+sys.path.insert(0, os.path.abspath('../../petrarch/'))
 
 # -- General configuration -----------------------------------------------------
 
@@ -64,7 +65,7 @@ release = '.01'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_build']
+exclude_patterns = []
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 #default_role = None
@@ -94,15 +95,21 @@ pygments_style = 'sphinx'
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'default'
+html_theme = 'bootstrap'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-#html_theme_options = {}
+html_theme_options = {
+    'navbar_links': [('About', 'About'), ('Tutorial','Tutorial')],
+
+    'globaltoc_includehidden': "true",
+
+    'bootswatch_theme': "flatly"
+}
 
 # Add any paths that contain custom themes here, relative to this directory.
-#html_theme_path = []
+html_theme_path = sphinx_bootstrap_theme.get_html_theme_path()
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
@@ -187,7 +194,7 @@ latex_elements = {
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
   ('index', 'PETRARCH.tex', u'PETRARCH Documentation',
-   u'Phil', 'manual'),
+   u'Philip Schrodt', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -217,7 +224,7 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'petrarch', u'PETRARCH Documentation',
-     [u'Phil'], 1)
+     [u'Philip Schrodt'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -231,7 +238,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
   ('index', 'PETRARCH', u'PETRARCH Documentation',
-   u'Phil', 'PETRARCH', 'One line description of project.',
+   u'Philip Schrodt', 'PETRARCH', 'One line description of project.',
    'Miscellaneous'),
 ]
 
@@ -246,61 +253,3 @@ texinfo_documents = [
 
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
-
-
-# -- Options for Epub output ---------------------------------------------------
-
-# Bibliographic Dublin Core info.
-epub_title = u'PETRARCH'
-epub_author = u'Phil'
-epub_publisher = u'Phil'
-epub_copyright = u'2013, Phil'
-
-# The language of the text. It defaults to the language option
-# or en if the language is not set.
-#epub_language = ''
-
-# The scheme of the identifier. Typical schemes are ISBN or URL.
-#epub_scheme = ''
-
-# The unique identifier of the text. This can be a ISBN number
-# or the project homepage.
-#epub_identifier = ''
-
-# A unique identification for the text.
-#epub_uid = ''
-
-# A tuple containing the cover image and cover page html template filenames.
-#epub_cover = ()
-
-# A sequence of (type, uri, title) tuples for the guide element of content.opf.
-#epub_guide = ()
-
-# HTML files that should be inserted before the pages created by sphinx.
-# The format is a list of tuples containing the path and title.
-#epub_pre_files = []
-
-# HTML files shat should be inserted after the pages created by sphinx.
-# The format is a list of tuples containing the path and title.
-#epub_post_files = []
-
-# A list of files that should not be packed into the epub file.
-#epub_exclude_files = []
-
-# The depth of the table of contents in toc.ncx.
-#epub_tocdepth = 3
-
-# Allow duplicate toc entries.
-#epub_tocdup = True
-
-# Fix unsupported image types using the PIL.
-#epub_fix_images = False
-
-# Scale large images.
-#epub_max_image_width = 0
-
-# If 'no', URL addresses will not be shown.
-#epub_show_urls = 'inline'
-
-# If false, no index is generated.
-#epub_use_index = True
