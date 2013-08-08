@@ -1,5 +1,5 @@
 .. PETRARCH documentation master file, created by
-   sphinx-quickstart on Wed Aug  7 19:29:27 2013.
+   sphinx-quickstart on Tue May 21 20:35:48 2013.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
@@ -11,10 +11,9 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-    Modules
-    petrarch
-
-
+   About
+   Tutorial
+   Modules
 
 Indices and tables
 ==================
