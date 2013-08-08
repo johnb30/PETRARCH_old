@@ -1,9 +1,7 @@
-Modules Documentation
-=====================
+petrarch
+========
 
 .. toctree::
    :maxdepth: 4
 
-   geonames_api
    petrarch
-   preprocess
