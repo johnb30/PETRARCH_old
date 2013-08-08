@@ -23,8 +23,8 @@ def read_data(filepath):
     Parameters
     ----------
 
-    filepath: String.   Filepath of the file containing the sentence to be
-    parsed.
+    filepath : String   
+                Filepath of the file containing the sentence to be parsed.
 
     """
     event_dict = dict()
@@ -170,8 +170,6 @@ def main():
             print 'Done feature extraction...{}:{}.{}'.format(datetime.now().hour, datetime.now().minute, datetime.now().second)
     elif cli_command == 'parallel_parse':
         import pp
-        import corenlp
-        import nltk.tree
 
         print 'Reading in sentences...{}:{}.{}'.format(datetime.now().hour, datetime.now().minute, datetime.now().second)
         events = read_data(inputs)
@@ -194,7 +192,8 @@ def main():
 
         print 'Parsing sentences...{}:{}.{}'.format(datetime.now().hour, datetime.now().minute, datetime.now().second)
         jobs = [job_server.submit(parse.parse, (chunk, stanford_dir,), (),
-                                  ("corenlp","nltk.tree",)) for chunk in chunks]
+                                  ("corenlp","nltk.tree", "utilities",)) 
+                for chunk in chunks]
 
         results = list()
         for job in jobs:

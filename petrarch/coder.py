@@ -1,11 +1,35 @@
 class ReadDictionaries():
+    """Class to parse actor and verb dictionaries into format useable by
+    the coder."""
     def __init__(self, actors, verbs):
+        """
+        Instantiate the ReadDictionaries class.
+
+        Parameters
+        ----------
+
+        actors : String
+                Filepath for the actors dictionary.
+
+        verbs : String
+                Filepath for the verbs dictionary.
+        """
         self.actors = actors
         self.verbs = verbs
         self.verb_dict = {}
         self.actor_dict = {}
 
     def read_verb_dictionary(self):
+        """
+        Function to read the verb dictionary.
+
+        Returns
+        -------
+
+        verb_dict : Dictionary
+                    Dictionary with verbs as keys and ??? as values.
+                    TODO: More info on datastructure.
+        """
     # Verb lists
     # 1. True: primary form; False: next item points to primary form
     # 2. Code
@@ -50,7 +74,7 @@ class ReadDictionaries():
 #			if ka > 10: break
 
     def _make_verb_forms(self):
-    # create the regular forms of a verb
+        """Private function to create the regular forms of a verb."""
         global theverb
         vroot = theverb[:-1]
         vscr = vroot + "S "
@@ -90,7 +114,7 @@ class ReadDictionaries():
         return phlist
 
     def _get_verb_forms(self):
-    # get the irregular forms of a verb
+        """Private function to obtain the irregular forms of a verb."""
         global verb, theverb
         scr = verb.partition('{')
         sc1 = scr[2].partition('}')
@@ -100,6 +124,16 @@ class ReadDictionaries():
             self.verb_dict[vscr] = [False, theverb]
 
     def read_actor_dictionary(self):
+        """
+        Function to read the actor dictionary.
+
+        Returns
+        -------
+
+        verb_dict : Dictionary
+                    Dictionary with actors as keys and ??? as values.
+                    TODO: More info on datastructure.
+        """
     # Actors are stored in a dictionary of pattern lists keyed on the first word
     # of the phrase. the Pattern lists begin with the code, the connector from then
     # key, and then a series of 2-tuples containing the remaining words and
@@ -151,11 +185,31 @@ class ReadDictionaries():
 
         return self.actor_dict
 
+
 class Coder():
+    """Class to code a sentence into the standard CAMEO event data format."""
     def __init__(self, parse_tree):
+        """
+        Instantiate the Coder class.
+
+        Parameters
+        ----------
+        
+        parse_tree : NLTK.tree object
+                    Parse tree for a given sentence.
+
+        Returns
+        -------
+
+        output_sentence : List
+                        Collapsed parse tree that contains noun and verb
+                        phrase information.
+        """
         self.sent = self._tree_to_list(parse_tree)
 
     def _tree_to_list(self, tree):
+        """Private function to convert a parse tree to a list format usable
+        by the coder."""
         output_sentence = list()
         for chunk in tree:
             try:
@@ -189,4 +243,3 @@ class Coder():
                     chunk_parts.append([chunk[0].upper(), chunk[1]])
                 output_sentence.append(chunk_parts)
         return output_sentence
-

@@ -1,3 +1,4 @@
+import utilities
 import corenlp
 import nltk.tree 
 
@@ -16,9 +17,9 @@ def parse(event_dict, stanford_dir):
     --------
 
     output_dict : Dictionary
-                Dictionary with story ID as key and a dictionary as the value.
-                Within the value dictionary are keys 'parse_tree', 'word_info',
-                'dependencies', and, optionally, 'corefs'.
+                  Dictionary with story ID as key and a dictionary as the value.
+                  Within the value dictionary are keys 'parse_tree', 'word_info',
+                  'dependencies', and, optionally, 'corefs'.
  
     """
     output_dict = dict()
@@ -37,35 +38,7 @@ def parse(event_dict, stanford_dir):
                                              [0]['words'])
             output_dict[key]['dependencies'] = (result['sentences'][0]
                                                 ['dependencies'])
-            #output_dict[key].update(_get_np(parsed))
-            #output_dict[key].update(_get_vp(parsed))
+            output_dict[key].update(utilities._get_np(parsed))
+            output_dict[key].update(utilities._get_vp(parsed))
 
     return output_dict
-
-def _get_np(parse_tree):
-    phrases = list()
-    words = list()
-    output = dict()
-    for node in parse_tree.subtrees(filter=lambda x: x.node == 'NP'):
-        phrases.append(node)
-        for word in node.leaves():
-            words.append(word)
-    
-    output['noun_phrases'] = phrases
-    output['np_words'] = words
-
-    return output
-
-def _get_vp(parse_tree):
-    phrases = list()
-    words = list()
-    output = dict()
-    for node in parse_tree.subtrees(filter=lambda x: x.node == 'NP'):
-        phrases.append(node)
-        for word in node.leaves():
-            words.append(word)
-
-    output['verb_phrases'] = phrases
-    output['vp_words'] = words
-
-    return output
