@@ -4,7 +4,6 @@ import os
 import geonames_api
 import nltk.stem
 from nltk import trigrams
-from joblib import Parallel, delayed
 
 def _get_data(path):
     """Private function to get the absolute path to the installed files."""
@@ -27,23 +26,6 @@ def process(event_dict, username=None, geolocate=False, feature_extract=False):
     for processed_sent in processed:
         key = processed_sent.keys()[0]
         event_dict[key].update(processed_sent[key])
-
-#    post_parsed = Parallel(n_jobs=-1)(delayed(process_call)
-#                                        (sent=event_dict[key]['story'],
-#                                        key=key, input_tagger=input_tagger,
-#                                        geolocate=geolocate,
-#                                        feature_extract=feature_extract,
-#                                        username=username)
-#                                        for key in event_dict)
-#
-#    for post_parsed_sent in post_parsed:
-#        key = post_parsed_sent.keys()[0]
-#        event_dict[key].update(post_parsed_sent[key])
-
-
-#def process_call(sent, key, input_tagger, username=None, geolocate=False, feature_extract=False):
-#    post_processor = ProcessSuite(sent, key, input_tagger)
-#    processed_info = post_processor.post_process(geolocate, username, feature_extract)
 
 def post_process(pos_tagged, key, noun_phrases, verb_phrases, geo=False, username=None, feature=False):
     """
