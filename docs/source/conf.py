@@ -103,7 +103,7 @@ html_theme = 'bootstrap'
 
 html_theme_options = {
     'navbar_links': [('About', 'About'), ('Tutorial', 'Tutorial'),
-                     ('Docs', 'Petrarch')],
+                     ('Docs', 'petrarch')],
 
     'bootswatch_theme': "flatly"
 }
