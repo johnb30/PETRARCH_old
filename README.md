@@ -8,33 +8,7 @@ event-data coding program.
 
 ###Current Usage
 
-Current options are:
+The program options are rather fluid at this point in time. If you would like
+to use the program, or just see how some of the output looks, simple usage is:
 
-command: parse
-
-- -i : Input file. Required.
-- -o : Output file. Required.
-- -n : Number of cores to use in parallel processing. Defaults to `-1`, which indicates all cores. Optional.
-- -u : Geonames username. Optional.
-- -F : Boolean argument indicating whether to run feature extraction. Optional.
-- -G : Boolean argument indicating whether to run geolocation. Username required. Optional.
-- -h : help
-
-The command as of now should look (something) like:
-
-    python petrarch.py parse -i SENTENCE_FILE -o output.txt -n 2 -u USERNAME -G -F
-
-####Tests
-
-To run the (single) test, just navigate to the toplevel of the directory
-and run `nosetests`. 
-
-##NOTE
-
-The setup.py file seems to work now. Since this software is in sub-alpha 
-development installing the program probably isn't the best idea. If you do
-install it, the use of a temporary virtual environment is advisable. Once
-installed, it should be possible to run the program using the following
-command:
-
-    petrarch parse -i SENTENCE_FILE -o output.txt -n 2 -u USERNAME -G -F
+    python petrarch.py parse -i SENTENCE_FILE -o output.txt 

@@ -1,3 +1,47 @@
+from nltk.tree import Tree
+
+
+def coref_replace(tree, corefs):
+    """
+    Function to replace pronouns with the referenced noun phrase. Parse trees
+    are modified in place, so nothing is returned. Replaces the pronoun with
+    a nltk.tree object with node type `COREF`.
+
+    Parameters
+    ----------
+
+    tree : nltk.tree object
+            Parse tree in nltk.tree format.
+
+    corefs : list
+            List of tuples as produced by corenlp-python that contains
+            information on pronouns and coreferences.
+    """
+    shift = 0
+    errors = list()
+    for item in corefs[0]:
+        pronoun = item[0]
+        ref = item[1]
+        if any([word in ref[0] for word in pronoun[0].split()]):
+            pass
+        elif any([word in pronoun[0] for word in ref[0].split()]):
+            pass
+        elif pronoun[4] - pronoun[3] > 1:
+            pass
+        else:
+            try:
+                pronoun_pos = tree.leaf_treeposition(pronoun[3] + shift)
+                coref_pos = tree.leaf_treeposition(ref[3])[:-2]
+                coref_tree = Tree('COREF', [tree[coref_pos]])
+                tree[pronoun_pos[:-1]] = coref_tree
+                shift += coref_tree.height()
+                errors.append(False)
+            except RuntimeError:
+                errors.append(True)
+                pass
+    return tree, errors
+
+
 def _get_np(parse_tree):
     """
     Private function to pull noun phrases from a parse tree.

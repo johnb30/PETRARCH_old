@@ -244,10 +244,15 @@ def main():
             print 'There was a key error'
             print events[event].keys()
             print events[event]['story']
-        try:
-            event_output += 'Coref info:\n {}\n\n'.format(events[event]['corefs'])
-        except KeyError:
-            pass
+        if 'corefs' in events[event].keys():
+            event_output += 'Coref info:\n {}\n'.format(events[event]['corefs'])
+        if 'coref_tree' in events[event].keys():
+            try:
+                event_output += 'Coref tree:\n {}\n\n'.format(events[event]['coref_tree'])
+            except Exception, e:
+                print 'There was an error for key {}: {}'.format(event, e)
+                print events[event]['coref_tree']
+                pass
         try:
             event_output += '\nGeolocate: \n {}, {}\n'.format(events[event]['lat'],
                                                               events[event]['lon'])
