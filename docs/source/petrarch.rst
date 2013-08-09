@@ -41,3 +41,11 @@ petrarch Package
     :undoc-members:
     :show-inheritance:
 
+:mod:`utilities` Module
+-----------------------
+
+.. automodule:: utilities
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
