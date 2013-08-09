@@ -1,4 +1,4 @@
-Package
+petrarch Package
 ================
 
 :mod:`coder` Module
@@ -25,7 +25,7 @@ Package
     :undoc-members:
     :show-inheritance:
 
-:mod:` Module
+:mod:`petrarch` Module
 ----------------------
 
 .. automodule:: petrarch
