@@ -4,7 +4,7 @@ petrarch Package
 :mod:`coder` Module
 -------------------
 
-.. automodule:: coder
+.. automodule:: petrarch.coder
     :members:
     :undoc-members:
     :show-inheritance:
@@ -12,7 +12,7 @@ petrarch Package
 :mod:`geonames_api` Module
 --------------------------
 
-.. automodule:: geonames_api
+.. automodule:: petrarch.geonames_api
     :members:
     :undoc-members:
     :show-inheritance:
@@ -20,7 +20,7 @@ petrarch Package
 :mod:`parse` Module
 -------------------
 
-.. automodule:: parse
+.. automodule:: petrarch.parse
     :members:
     :undoc-members:
     :show-inheritance:
@@ -28,7 +28,7 @@ petrarch Package
 :mod:`petrarch` Module
 ----------------------
 
-.. automodule:: petrarch
+.. automodule:: petrarch.petrarch
     :members:
     :undoc-members:
     :show-inheritance:
@@ -36,7 +36,15 @@ petrarch Package
 :mod:`postprocess` Module
 -------------------------
 
-.. automodule:: postprocess
+.. automodule:: petrarch.postprocess
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`utilities` Module
+-----------------------
+
+.. automodule:: petrarch.utilities
     :members:
     :undoc-members:
     :show-inheritance:
