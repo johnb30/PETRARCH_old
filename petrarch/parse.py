@@ -43,7 +43,8 @@ def parse(event_dict, stanford_dir):
             if 'coref' in result:
                 output_dict[key]['corefs'] = result['coref']
                 coref_tree = copy.deepcopy(parsed)
-                coref_tree, errors = utilities.coref_replace(coref_tree, result['coref'])
+                coref_tree, errors = utilities.coref_replace(coref_tree, 
+                                                             result['coref'])
                 if not any(errors):
                     output_dict[key]['coref_tree'] = coref_tree
         if output_dict[key]['coref_tree'] == output_dict[key]['parse_tree']:
