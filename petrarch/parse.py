@@ -28,9 +28,6 @@ def parse(event_dict, stanford_dir):
     corenlp_dir = stanford_dir
     core = corenlp.StanfordCoreNLP(corenlp_dir)
     for key in event_dict:
-        #if key == 'AFPN-0224-01':
-        #    pass
-        #else:
         result = core.raw_parse(event_dict[key]['story'])
         output_dict[key] = dict()
         if len(result['sentences']) == 1:
@@ -49,5 +46,7 @@ def parse(event_dict, stanford_dir):
                 coref_tree, errors = utilities.coref_replace(coref_tree, result['coref'])
                 if not any(errors):
                     output_dict[key]['coref_tree'] = coref_tree
+        if output_dict[key]['coref_tree'] == output_dict[key]['parse_tree']:
+            del output_dict[key]['coref_tree']
 
     return output_dict

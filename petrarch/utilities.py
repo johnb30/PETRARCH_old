@@ -34,7 +34,10 @@ def coref_replace(tree, corefs):
                 coref_pos = tree.leaf_treeposition(ref[3])[:-2]
                 coref_tree = Tree('COREF', [tree[coref_pos]])
                 tree[pronoun_pos[:-1]] = coref_tree
-                shift += coref_tree.height()
+                if len(coref_tree.leaves()) == 1:
+                    shift += 0
+                else:
+                    shift += coref_tree.height()
                 errors.append(False)
             except RuntimeError:
                 errors.append(True)

@@ -1,5 +1,3 @@
-# coding=utf-8
-
 import os
 import geonames_api
 import nltk.stem
@@ -62,9 +60,10 @@ def post_process(pos_tagged, key, noun_phrases, verb_phrases, geo=False,
     return sub_event_dict
 
 
-def extract_entities(word_info, tag=['TIME', 'LOCATION', 'ORGANIZATION', 'PERSON', 'MISC', 'MONEY', 'PERCENT', 'DATE']):
+def extract_entities(word_info, tag=[]):
     """
-    Private function to extract tagged named entities from Word Info from CoreNLP output
+    Function to extract tagged named entities from Word Info from
+    CoreNLP output
 
     Parameters
     ------
@@ -72,7 +71,10 @@ def extract_entities(word_info, tag=['TIME', 'LOCATION', 'ORGANIZATION', 'PERSON
                 Word Info object from CoreNLP output
 
     tag: List. (optional)
-                List of Stanford NER Named Entity Tags, e.g., [TIME, LOCATION, ORGANIZATION, PERSON, MONEY, PERCENT, DATE, MISC]
+            List of Stanford NER Named Entity Tags, e.g.,
+            [TIME, LOCATION, ORGANIZATION, PERSON, MONEY, PERCENT, DATE,
+            MISC]
+
     Returns
     -------
 
@@ -87,26 +89,28 @@ def extract_entities(word_info, tag=['TIME', 'LOCATION', 'ORGANIZATION', 'PERSON
     entities = []
     ner = ''
 
-    for i in range(0, len(word_info)):
+    if not tag:
+        tag = ['TIME', 'LOCATION', 'ORGANIZATION',
+               'PERSON', 'MISC', 'MONEY', 'PERCENT',
+               'DATE']
+
+    for i in xrange(len(word_info)):
         if word_info[i][1]['NamedEntityTag'] in tag:
-            ner+=word_info[i][0]+'_'
+            ner += word_info[i][0]+'_'
             if word_info[i+1][1]['NamedEntityTag'] == 'O':
-                entities_tags.append((ner, {'NamedEntityTag' : word_info[i][1]['NamedEntityTag']}))
+                entities_tags.append((ner, word_info[i][1]['NamedEntityTag']))
                 entities.append(ner)
                 ner = ''
-                continue
-            else:
-                pass
-        else:
-           continue
 
-    return {'entities':extracted_entities, 'entities_tags':extracted_entities_tags}
+    output = {'entities': entities, 'entities_tags': entities_tags}
+
+    return output
 
 
 def _not_in_dict(dictionary, item_list):
     """
     Private function to identify list of items not in dictionary
-    
+
     Parameters
     ------
     dicionary: Dict.
@@ -124,7 +128,7 @@ def _not_in_dict(dictionary, item_list):
     """
     dict_items = []
     for key in dictionary:
-       dict_items.append(key)
+        dict_items.append(key)
 
     not_in_dict = []
     for item in item_list:
