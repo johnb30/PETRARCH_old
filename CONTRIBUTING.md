@@ -1,6 +1,6 @@
 # Contributing Code
 
-You can check out the latest version of `petrarch` by cloning this repository using [git](http://git-scm.com/).
+You can check out the latest version of petrarch by cloning this repository using [git](http://git-scm.com/).
 
 	git clone https://github.com/eventdata/PETRARCH.git
 
