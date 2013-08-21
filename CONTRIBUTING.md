@@ -1,6 +1,6 @@
 # Contributing Code
 
-You can check out the latest version of `petrarch` by cloning this repository using [git]().
+You can check out the latest version of `petrarch` by cloning this repository using [git](http://git-scm.com/).
 
 	git clone https://github.com/eventdata/PETRARCH.git
 
@@ -11,6 +11,8 @@ To contribute to petrarch you should fork the repository, create a branch, add t
 	git add... # stage the files you modified or added
 	git commit... # commit the modified or added files
 	git push origin my_feature
+
+Commit messages should first be a line, no longer than 80 characters, that summarizes what the commit does. Then there should be a space, followed by a longer description of the changes contained in the commit. Since these comments are tied specifically to the code they refer to (and cannot be out of date) please be detailed.
 
 Note that `origin` (if you are cloning the forked petrarch repository to your local machine) refers to that fork on GitHub, *not* the original (upstream) repository [https://github.com/eventdata/PETRARCH.git](https://github.com/eventdata/PETRARCH.git). If the upstream repository has changed since you forked and cloned it you can set an upstream remote:
 
@@ -36,3 +38,5 @@ In addition, we add the following guidelines:
  - Use relative imports for references inside petrarch.
  - Please don’t use `import *`. It is considered harmful by the official Python recommendations. It makes the code harder to read as the origin of symbols is no longer explicitly referenced, but most important, it prevents using a static analysis tool like pyflakes to automatically find bugs in petrarch.
 Use the numpy docstring standard in all your docstrings.
+
+These docs draw heavily on the contributing guidelines for [scikit-learn](http://scikit-learn.org/).
