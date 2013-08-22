@@ -27,7 +27,6 @@ def parse(event_dict, stanford_dir):
     output_dict = dict()
     corenlp_dir = stanford_dir
     core = corenlp.StanfordCoreNLP(corenlp_dir)
-    num = 0
     for key in event_dict:
         result = core.raw_parse(event_dict[key]['story'])
         output_dict[key] = dict()
