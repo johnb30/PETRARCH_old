@@ -29,7 +29,6 @@ def parse(event_dict, stanford_dir):
     core = corenlp.StanfordCoreNLP(corenlp_dir)
     num = 0
     for key in event_dict:
-        num += 1
         result = core.raw_parse(event_dict[key]['story'])
         output_dict[key] = dict()
         if len(result['sentences']) == 1:
@@ -49,10 +48,6 @@ def parse(event_dict, stanford_dir):
                                                              result['coref'])
                 if not any(errors):
                     if coref_tree != parsed:
-                        print 'Not equal!'
                         output_dict[key]['coref_tree'] = coref_tree
-                    else:
-                        print 'Trees are equal!'
 
-    print num
     return output_dict
