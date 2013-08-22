@@ -32,10 +32,10 @@ def parse(event_dict, stanford_dir):
         output_dict[key] = dict()
         if len(result['sentences']) == 1:
             output_dict[key]['parse_tree'] = (result['sentences'][0]
-                                            ['parsetree'])
+                                              ['parsetree'])
             parsed = nltk.tree.Tree(result['sentences'][0]['parsetree'])
             output_dict[key]['word_info'] = (result['sentences']
-                                            [0]['words'])
+                                             [0]['words'])
             output_dict[key]['dependencies'] = (result['sentences'][0]
                                                 ['dependencies'])
             output_dict[key].update(utilities._get_np(parsed))
@@ -43,11 +43,10 @@ def parse(event_dict, stanford_dir):
             if 'coref' in result:
                 output_dict[key]['corefs'] = result['coref']
                 coref_tree = copy.deepcopy(parsed)
-                coref_tree, errors = utilities.coref_replace(coref_tree, 
+                coref_tree, errors = utilities.coref_replace(coref_tree,
                                                              result['coref'])
                 if not any(errors):
-                    output_dict[key]['coref_tree'] = coref_tree
-        if output_dict[key]['coref_tree'] == output_dict[key]['parse_tree']:
-            del output_dict[key]['coref_tree']
+                    if coref_tree != parsed:
+                        output_dict[key]['coref_tree'] = coref_tree
 
     return output_dict
