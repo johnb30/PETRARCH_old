@@ -32,26 +32,10 @@ def parse(event_dict, stanford_dir):
     core = corenlp.StanfordCoreNLP(corenlp_dir)
     for key in event_dict:
         result = core.raw_parse(event_dict[key]['story'])
-        output_dict[key] = dict()
         if len(result['sentences']) == 1:
-            sent_info = {0: dict()}
-            sent_info[0]['parse_tree'] = (result['sentences'][0]
-                                              ['parsetree'])
-            sent_info[0]['word_info'] = (result['sentences'][0]['words'])
-            sent_info[0]['dependencies'] = (result['sentences'][0]
-                                                ['dependencies'])
-
-            parsed = nltk.tree.Tree(result['sentences'][0]['parsetree'])
-            sent_info[0].update(utilities._get_np(parsed))
-            sent_info[0].update(utilities._get_vp(parsed))
-            del parsed
-
+            output_dict = _parse_sents(output_dict, key, result)
             if 'coref' in result:
-                corefs = result['coref']
-
-                ordered_corefs = {0: {'corefs': corefs, 'shift': 0}}
-
-                coref_tree = copy.deepcopy(sent_info[0]['parse_tree'])
+                coref_tree = copy.deepcopy(output_dict[key]['parse_tree'])
                 coref_tree, errors = utilities.coref_replace(coref_tree,
                                                              result['coref'])
                 if not any(errors):
@@ -64,6 +48,7 @@ def parse(event_dict, stanford_dir):
             pass
 
     return output_dict
+
 
 def batch_parse(text_dir, stanford_dir):
     """Function to parse sentences using StanfordNLP.
@@ -89,30 +74,36 @@ def batch_parse(text_dir, stanford_dir):
     output_dict = dict()
     results = corenlp.batch_parse(text_dir, stanford_dir)
     for index in xrange(len(results)):
-        name = results[index]['file_name']
-        num_sents = len(results[index]['sentences'])
-        sent_info = dict()
-        for i, content in enumerate(results[index]['sentences']):
-            sent_info[i] = dict()
-            sent_info[i]['parse_tree'] = (content['parsetree'])
-            sent_info[i]['word_info'] = (content['words'])
-            sent_info[i]['dependencies'] = (content['dependencies'])
+        parsed = results[index]
+        name = parsed['file_name']
+        output_dict = _parse_sents(output_dict, name, parsed)
 
-            parsed = nltk.tree.Tree(content['parsetree'])
-            sent_info[i].update(utilities._get_np(parsed))
-            sent_info[i].update(utilities._get_vp(parsed))
-            del parsed
 
-        if 'coref' in results[index].keys():
-            corefs = results[index]['coref']
+def _parse_sents(final_output, key, results):
+    num_sents = len(results['sentences'])
+    sent_info = dict()
+    for i, content in enumerate(results['sentences']):
+        sent_info[i] = dict()
+        sent_info[i]['parse_tree'] = (content['parsetree'])
+        sent_info[i]['word_info'] = (content['words'])
+        sent_info[i]['dependencies'] = (content['dependencies'])
 
-            ordered_corefs = dict()
-            for i in xrange(num_sents):
-                ordered_corefs[i] = {'corefs': list(), 'shift': 0}
-            for i in xrange(len(corefs)):
-                for x in xrange(len(corefs[i])):
-                    pronoun_sent = corefs[i][x][0][1]
-                    ordered_corefs[pronoun_sent]['corefs'].append(corefs[i][x])
-        else:
-            corefs = None
+        parsed = nltk.tree.Tree(content['parsetree'])
+        sent_info[i].update(utilities._get_np(parsed))
+        sent_info[i].update(utilities._get_vp(parsed))
+        del parsed
+    final_output[key] = {'sent_info': {'sents': sent_info}}
 
+    if 'coref' in results.keys():
+        corefs = results['coref']
+        ordered_corefs = dict()
+        for i in xrange(num_sents):
+            ordered_corefs[i] = {'corefs': list(), 'shift': 0,
+                                 'errors': list()}
+        for i in xrange(len(corefs)):
+            for x in xrange(len(corefs[i])):
+                pronoun_sent = corefs[i][x][0][1]
+                ordered_corefs[pronoun_sent]['corefs'].append(corefs[i][x])
+        final_output[key]['sent_info']['coref_info'] = ordered_corefs
+
+    return final_output

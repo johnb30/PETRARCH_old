@@ -3,6 +3,7 @@ import postprocess
 import argparse
 import parse
 import glob
+import sys
 import os
 from ConfigParser import ConfigParser
 from datetime import datetime
@@ -106,6 +107,7 @@ def parse_config():
     """Function to parse the config file for PETRARCH."""
     config_file = glob.glob('config.ini')
     parser = ConfigParser()
+    print os.path.dirname(sys.executable)
     if config_file:
         print 'Found a config file in working directory.'
         parser.read(config_file)
