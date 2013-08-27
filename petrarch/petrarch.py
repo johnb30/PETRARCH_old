@@ -5,6 +5,7 @@ import parse
 import glob
 import sys
 import os
+import json
 from ConfigParser import ConfigParser
 from datetime import datetime
 
@@ -235,38 +236,40 @@ def main():
     event_output = str()
 
     print 'Writing the events to file...'
-    for event in events:
-        event_output += '\n=======================\n\n'
-        event_output += 'event id: {}\n\n'.format(event)
-        try:
-            event_output += 'Word info:\n {}\n\n'.format(events[event]['word_info'])
-            event_output += 'Parse tree:\n {}\n\n'.format(events[event]['parse_tree'])
-            event_output += 'Word dependencies:\n {}\n\n'.format(events[event]['dependencies'])
-        except KeyError:
-            print 'There was a key error'
-            print events[event].keys()
-            print events[event]['story']
-        if 'corefs' in events[event].keys():
-            event_output += 'Coref info:\n {}\n'.format(events[event]['corefs'])
-        if 'coref_tree' in events[event].keys():
-            try:
-                event_output += 'Coref tree:\n {}\n\n'.format(events[event]['coref_tree'])
-            except Exception, e:
-                print 'There was an error for key {}: {}'.format(event, e)
-                print events[event]['coref_tree']
-                pass
-        try:
-            event_output += '\nGeolocate: \n {}, {}\n'.format(events[event]['lat'],
-                                                              events[event]['lon'])
-        except KeyError:
-            pass
-        try:
-            event_output += 'Feature extract: \n {}\n'.format(events[event]['num_involved'])
-        except KeyError:
-            pass
-
     with open(out_path, 'w') as f:
-        f.write(event_output)
+        json.dump(events, f)
+#    for event in events:
+#        event_output += '\n=======================\n\n'
+#        event_output += 'event id: {}\n\n'.format(event)
+#        try:
+#            event_output += 'Word info:\n {}\n\n'.format(events[event]['word_info'])
+#            event_output += 'Parse tree:\n {}\n\n'.format(events[event]['parse_tree'])
+#            event_output += 'Word dependencies:\n {}\n\n'.format(events[event]['dependencies'])
+#        except KeyError:
+#            print 'There was a key error'
+#            print events[event].keys()
+#            print events[event]['story']
+#        if 'corefs' in events[event].keys():
+#            event_output += 'Coref info:\n {}\n'.format(events[event]['corefs'])
+#        if 'coref_tree' in events[event].keys():
+#            try:
+#                event_output += 'Coref tree:\n {}\n\n'.format(events[event]['coref_tree'])
+#            except Exception, e:
+#                print 'There was an error for key {}: {}'.format(event, e)
+#                print events[event]['coref_tree']
+#                pass
+#        try:
+#            event_output += '\nGeolocate: \n {}, {}\n'.format(events[event]['lat'],
+#                                                              events[event]['lon'])
+#        except KeyError:
+#            pass
+#        try:
+#            event_output += 'Feature extract: \n {}\n'.format(events[event]['num_involved'])
+#        except KeyError:
+#            pass
+#
+#    with open(out_path, 'w') as f:
+#        f.write(event_output)
 
 
 if __name__ == '__main__':

@@ -1,4 +1,76 @@
 from nltk.tree import Tree
+import copy
+
+
+def coref_replace2(event_dict, key):
+    if 'coref_info' in event_dict[key]['sent_info'].keys():
+        sent_info = event_dict[key]['sent_info']['sents']
+        coref_info = event_dict[key]['sent_info']['coref_info']
+        for sent in coref_info:
+            for coref in coref_info[sent]['corefs']:
+                pronoun = coref[0]
+                ref = coref[1]
+                if any([word in ref[0] for word in pronoun[0].split()]):
+                    pass
+                elif any([word in pronoun[0] for word in ref[0].split()]):
+                    pass
+                elif pronoun[4] - pronoun[3] > 1:
+                    pass
+                else:
+                    try:
+                        #Getting the stuff for pronouns
+                        if 'coref_tree' in sent_info[pronoun[1]].keys():
+                            pronoun_sent = copy.deepcopy(sent_info[pronoun[1]]
+                                                            ['coref_tree'])
+                        else:
+                            pronoun_sent = copy.deepcopy(sent_info[pronoun[1]]
+                                                            ['parse_tree'])
+                            pronoun_sent = Tree(pronoun_sent)
+                        pro_shift = coref_info[pronoun[1]]['shift']
+                        print 'pro_shift: {}'.format(pro_shift)
+                        #Getting stuff for the reference
+                        if 'coref_tree' in sent_info[ref[1]].keys():
+                            coref_sent = sent_info[ref[1]]['coref_tree']
+                        else:
+                            coref_sent = Tree(sent_info[ref[1]]
+                                                ['parse_tree'])
+                        ref_shift = coref_info[ref[1]]['shift']
+
+                        #Actaully replacing the pronoun
+                        try:
+                            pronoun_pos = pronoun_sent.leaf_treeposition(pronoun[3]
+                                                                            + pro_shift)
+                            coref_pos = coref_sent.leaf_treeposition(ref[3] +
+                                                                        ref_shift)[:-2]
+                            coref_tree = Tree('COREF', [coref_sent[coref_pos]])
+                            pronoun_sent[pronoun_pos[:-1]] = coref_tree
+                        except IndexError:
+                            print 'IndexError!'
+                            print 'pro_shift: {}'.format(pro_shift)
+                            print 'pronoun_sent: {}\n'.format(pronoun_sent)
+                            break
+
+                        #Recording the shift length for the pronoun replacement
+                        if len(coref_tree.leaves()) == 1:
+                            coref_info[pronoun[1]]['shift'] += 0
+                        else:
+                            coref_info[pronoun[1]]['shift'] += coref_tree.height()
+
+                        coref_info[pronoun[1]]['errors'].append(False)
+
+                        if not any(coref_info[pronoun[1]]['errors']):
+                            if pronoun_sent != sent_info[sent]['parse_tree']:
+                                sent_info[sent]['coref_tree'] = pronoun_sent
+                    except RuntimeError:
+                        coref_info[pronoun[1]]['errors'].append(True)
+                        pass
+        try:
+            print 'Original tree: {}'.format(sent_info[sent]['parse_tree'])
+            print 'Coref tree: {}'.format(sent_info[sent]['coref_tree'])
+        except KeyError:
+            pass
+    else:
+        pass
 
 
 def coref_replace(tree, corefs):

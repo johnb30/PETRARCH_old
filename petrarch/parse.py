@@ -31,20 +31,24 @@ def parse(event_dict, stanford_dir):
     corenlp_dir = stanford_dir
     core = corenlp.StanfordCoreNLP(corenlp_dir)
     for key in event_dict:
+        print '\nProcessing key {}'.format(key)
         result = core.raw_parse(event_dict[key]['story'])
         if len(result['sentences']) == 1:
-            output_dict = _parse_sents(output_dict, key, result)
+            output = _parse_sents(key, result)
+            output_dict.update(output)
             if 'coref' in result:
-                coref_tree = copy.deepcopy(output_dict[key]['parse_tree'])
-                coref_tree, errors = utilities.coref_replace(coref_tree,
-                                                             result['coref'])
-                if not any(errors):
-                    output_dict[key]['coref_tree'] = coref_tree
-        if output_dict[key]['coref_tree'] == output_dict[key]['parse_tree']:
-            del output_dict[key]['coref_tree']
+                utilities.coref_replace2(output_dict, key)
+#                coref_tree = copy.deepcopy(output_dict[key]['parse_tree'])
+#                coref_tree, errors = utilities.coref_replace(coref_tree,
+#                                                             result['coref'])
+#                if not any(errors):
+#                    output_dict[key]['coref_tree'] = coref_tree
+#        if output_dict[key]['coref_tree'] == output_dict[key]['parse_tree']:
+#            del output_dict[key]['coref_tree']
         else:
             print """Key {} is longer than one sentence, passing. Please check
-                  the input format if you would like this key to be parsed!"""
+                  the input format if you would like this key to be
+                  parsed!""".format(key)
             pass
 
     return output_dict
@@ -79,7 +83,8 @@ def batch_parse(text_dir, stanford_dir):
         output_dict = _parse_sents(output_dict, name, parsed)
 
 
-def _parse_sents(final_output, key, results):
+def _parse_sents(key, results):
+    sent_output = dict()
     num_sents = len(results['sentences'])
     sent_info = dict()
     for i, content in enumerate(results['sentences']):
@@ -92,7 +97,7 @@ def _parse_sents(final_output, key, results):
         sent_info[i].update(utilities._get_np(parsed))
         sent_info[i].update(utilities._get_vp(parsed))
         del parsed
-    final_output[key] = {'sent_info': {'sents': sent_info}}
+    sent_output[key] = {'sent_info': {'sents': sent_info}}
 
     if 'coref' in results.keys():
         corefs = results['coref']
@@ -104,6 +109,6 @@ def _parse_sents(final_output, key, results):
             for x in xrange(len(corefs[i])):
                 pronoun_sent = corefs[i][x][0][1]
                 ordered_corefs[pronoun_sent]['corefs'].append(corefs[i][x])
-        final_output[key]['sent_info']['coref_info'] = ordered_corefs
+        sent_output[key]['sent_info']['coref_info'] = ordered_corefs
 
-    return final_output
+    return sent_output
