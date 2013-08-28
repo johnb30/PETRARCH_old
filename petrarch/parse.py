@@ -1,4 +1,3 @@
-import copy
 import corenlp
 import nltk.tree
 import utilities

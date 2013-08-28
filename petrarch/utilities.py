@@ -27,7 +27,6 @@ def coref_replace2(event_dict, key):
                                                             ['parse_tree'])
                             pronoun_sent = Tree(pronoun_sent)
                         pro_shift = coref_info[pronoun[1]]['shift']
-                        print 'pro_shift: {}'.format(pro_shift)
                         #Getting stuff for the reference
                         if 'coref_tree' in sent_info[ref[1]].keys():
                             coref_sent = sent_info[ref[1]]['coref_tree']
@@ -45,13 +44,14 @@ def coref_replace2(event_dict, key):
                             coref_tree = Tree('COREF', [coref_sent[coref_pos]])
                             pronoun_sent[pronoun_pos[:-1]] = coref_tree
                         except IndexError:
-                            print 'IndexError!'
-                            print 'pro_shift: {}'.format(pro_shift)
-                            print 'pronoun_sent: {}\n'.format(pronoun_sent)
+                            #TODO: Should this use the original sentence rather
+                            #than possibly bad coreferences?
+                            print """Key {} has a problem with the corefencing.
+                                     Breaking and moving on."""
                             break
 
                         #Recording the shift length for the pronoun replacement
-                        if len(coref_tree.leaves()) == 1:
+                        if len(coref_tree.leaves()) <= 3:
                             coref_info[pronoun[1]]['shift'] += 0
                         else:
                             coref_info[pronoun[1]]['shift'] += coref_tree.height()
@@ -64,11 +64,11 @@ def coref_replace2(event_dict, key):
                     except RuntimeError:
                         coref_info[pronoun[1]]['errors'].append(True)
                         pass
-        try:
-            print 'Original tree: {}'.format(sent_info[sent]['parse_tree'])
-            print 'Coref tree: {}'.format(sent_info[sent]['coref_tree'])
-        except KeyError:
-            pass
+#        try:
+#            print 'Original tree: {}'.format(sent_info[sent]['parse_tree'])
+#            print 'Coref tree: {}'.format(sent_info[sent]['coref_tree'])
+#        except KeyError:
+#            pass
     else:
         pass
 
