@@ -5,7 +5,6 @@ import parse
 import glob
 import sys
 import os
-import json
 from ConfigParser import ConfigParser
 from datetime import datetime
 

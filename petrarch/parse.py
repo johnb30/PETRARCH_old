@@ -4,7 +4,10 @@ import utilities
 
 
 def parse(event_dict, stanford_dir):
-    """Function to parse single-sentence input using StanfordNLP.
+    """Function to parse single-sentence input using StanfordNLP. The function
+    parses the input, and performs pronoun coreferencing where appropriate. If
+    the input is longer than one setence as determined by StanfordNLP, the
+    program will pass on that input.
 
     Parameters
     ----------
@@ -21,10 +24,29 @@ def parse(event_dict, stanford_dir):
     --------
 
     output_dict : Dictionary
-                  Dictionary with story ID as key and a dictionary as the
-                  value. Within the value dictionary are keys 'parse_tree',
-                  'word_info', 'dependencies', and, optionally, 'corefs'.
-
+                    Output dictionary format is of the following form. The
+                    main level has keys of event IDs, e.g., AFPN-0301-01, with
+                    dictionaries as values. At this stage, the value dictionary
+                    has one key, `sent_info`, which has another dictionary as
+                    the value. Within the `sent_info` dictionary are keys
+                    `sents` and `coref_info`. Each has dictionaries as their
+                    values. The `sents` dictionary has integers as keys, which
+                    represent the different sentences within a text input. Each
+                    individual sentence dictionary contains the keys
+                    `parse_tree` (nltk.tree), `dependencies` (list),
+                    `np_words` (list), `word_info` (list),
+                    `verb_phrases` (list), `vp_words` (list), and
+                    `noun_phrases` (list). The `coref_info` dictionary has a
+                    similar structure, with each sentence having its own
+                    individual dictionary with keys `shift` (integer) and
+                    `corefs` (list). Given this, the final structure of the
+                    output resembles:
+                    {'event_id': {'sent_info': {'sents': {0: {'parse_tree': tree
+                                                              'dependencies': list}
+                                                          1: {...}}
+                                                'coref_info': {0: {'shift': 0
+                                                               'corefs': []}}
+                                                }}}
     """
     output_dict = dict()
     corenlp_dir = stanford_dir
@@ -35,7 +57,7 @@ def parse(event_dict, stanford_dir):
             output = _parse_sents(key, result)
             output_dict.update(output)
             if 'coref' in result:
-                utilities.coref_replace2(output_dict, key)
+                utilities.coref_replace(output_dict, key)
         else:
             print """Key {} is longer than one sentence, passing. Please check
 the input format if you would like this key to be parsed!""".format(key)
@@ -45,7 +67,9 @@ the input format if you would like this key to be parsed!""".format(key)
 
 
 def batch_parse(text_dir, stanford_dir):
-    """Function to parse sentences using StanfordNLP.
+    """Function to parse multi-sentence input using StanfordNLP in batch mode.
+    The function parses the input, and performs pronoun coreferencing where
+    appropriate. Coreferences are linked across sentences.
 
     Parameters
     ----------
@@ -60,9 +84,29 @@ def batch_parse(text_dir, stanford_dir):
     --------
 
     output_dict : Dictionary
-                  Dictionary with filename as key and a dictionary as the
-                  value. Within the value dictionary are keys 'parse_tree',
-                  'word_info', 'dependencies', and, optionally, 'corefs'.
+                    Output dictionary format is of the following form. The
+                    main level has keys of story IDs, e.g., story1.txt, with values
+                    of dictionaries. At this stage, the value dictionary has
+                    one key, `sent_info`, which has another dictionary as
+                    the value. Within the `sent_info` dictionary are keys
+                    `sents` and `coref_info`. Each has dictionaries as their
+                    values. The `sents` dictionary has integers as keys, which
+                    represent the different sentences within a text input. Each
+                    individual sentence dictionary contains the keys
+                    `parse_tree` (nltk.tree), `dependencies` (list),
+                    `np_words` (list), `word_info` (list),
+                    `verb_phrases` (list), `vp_words` (list), and
+                    `noun_phrases` (list). The `coref_info` dictionary has a
+                    similar structure, with each sentence having its own
+                    individual dictionary with keys `shift` (integer) and
+                    `corefs` (list). Given this, the final structure of the
+                    output resembles:
+                    {'event_id': {'sent_info': {'sents': {0: {'parse_tree': tree
+                                                              'dependencies': list}
+                                                          1: {...}}
+                                                'coref_info': {0: {'shift': 0
+                                                               'corefs': []}}
+                                                }}}
 
     """
     output_dict = dict()
@@ -73,7 +117,7 @@ def batch_parse(text_dir, stanford_dir):
         output = _parse_sents(name, parsed)
         output_dict.update(output)
     for article in output_dict:
-        utilities.coref_replace2(output_dict, article)
+        utilities.coref_replace(output_dict, article)
 
     return output_dict
 

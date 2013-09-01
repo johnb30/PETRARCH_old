@@ -2,7 +2,30 @@ from nltk.tree import Tree
 import copy
 
 
-def coref_replace2(event_dict, key):
+def coref_replace(event_dict, key):
+    """
+    Function to replace pronouns with the referenced noun phrase. Iterates
+    over each sentence in a news story and pulls coreference information
+    from the applicable sentence, even if it is from another sentence. Also
+    keeps track of any changes in indexes made by replacing pronouns, i.e.,
+    the reference is longer than the reference so the tree index changes for
+    future references. Filters coreferences on various dimensions to ensure
+    only "good" coreferences are replaced. The default behavior is to do
+    no replacement rather than a bad replacement. The function does not
+    return a value, instead the event_dict is updated with the new parse tree
+    containing the coref information.
+
+    Parameters
+    ----------
+
+    event_dict: Dictionary.
+                    Dictionary of sentence information, such as produced by
+                    utilities.parse_sents().
+
+    key: String.
+            ID of the event or news story being processed.
+
+;    """
     #TODO: This could use some major refactoring.
     if 'coref_info' in event_dict[key]['sent_info'].keys():
         sent_info = event_dict[key]['sent_info']['sents']
@@ -90,50 +113,6 @@ def coref_replace2(event_dict, key):
                         pass
     else:
         pass
-
-
-def coref_replace(tree, corefs):
-    """
-    Function to replace pronouns with the referenced noun phrase. Parse trees
-    are modified in place, so nothing is returned. Replaces the pronoun with
-    a nltk.tree object with node type `COREF`.
-
-    Parameters
-    ----------
-
-    tree : nltk.tree object
-            Parse tree in nltk.tree format.
-
-    corefs : list
-            List of tuples as produced by corenlp-python that contains
-            information on pronouns and coreferences.
-    """
-    shift = 0
-    errors = list()
-    for item in corefs[0]:
-        pronoun = item[0]
-        ref = item[1]
-        if any([word in ref[0] for word in pronoun[0].split()]):
-            pass
-        elif any([word in pronoun[0] for word in ref[0].split()]):
-            pass
-        elif pronoun[4] - pronoun[3] > 1:
-            pass
-        else:
-            try:
-                pronoun_pos = tree.leaf_treeposition(pronoun[3] + shift)
-                coref_pos = tree.leaf_treeposition(ref[3])[:-2]
-                coref_tree = Tree('COREF', [tree[coref_pos]])
-                tree[pronoun_pos[:-1]] = coref_tree
-                if len(coref_tree.leaves()) == 1:
-                    shift += 0
-                else:
-                    shift += coref_tree.height()
-                errors.append(False)
-            except RuntimeError:
-                errors.append(True)
-                pass
-    return tree, errors
 
 
 def _get_np(parse_tree):
