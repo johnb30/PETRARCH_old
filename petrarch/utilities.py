@@ -3,6 +3,7 @@ import copy
 
 
 def coref_replace2(event_dict, key):
+    #TODO: This could use some major refactoring.
     if 'coref_info' in event_dict[key]['sent_info'].keys():
         sent_info = event_dict[key]['sent_info']['sents']
         coref_info = event_dict[key]['sent_info']['coref_info']
@@ -21,37 +22,59 @@ def coref_replace2(event_dict, key):
                         #Getting the stuff for pronouns
                         if 'coref_tree' in sent_info[pronoun[1]].keys():
                             pronoun_sent = copy.deepcopy(sent_info[pronoun[1]]
-                                                            ['coref_tree'])
+                                                         ['coref_tree'])
                         else:
                             pronoun_sent = copy.deepcopy(sent_info[pronoun[1]]
-                                                            ['parse_tree'])
+                                                         ['parse_tree'])
                             pronoun_sent = Tree(pronoun_sent)
                         pro_shift = coref_info[pronoun[1]]['shift']
                         #Getting stuff for the reference
                         if 'coref_tree' in sent_info[ref[1]].keys():
                             coref_sent = sent_info[ref[1]]['coref_tree']
                         else:
-                            coref_sent = Tree(sent_info[ref[1]]
-                                                ['parse_tree'])
+                            coref_sent = Tree(sent_info[ref[1]]['parse_tree'])
                         ref_shift = coref_info[ref[1]]['shift']
 
                         #Actaully replacing the pronoun
                         try:
                             pronoun_pos = pronoun_sent.leaf_treeposition(pronoun[3]
-                                                                            + pro_shift)
-                            coref_pos = coref_sent.leaf_treeposition(ref[3] +
-                                                                        ref_shift)[:-2]
+                                                                         + pro_shift)
+                            #Hunting for the right pronoun
+                            if pronoun_sent[pronoun_pos] != pronoun[0]:
+                                if pronoun_sent[pronoun_sent.leaf_treeposition(pronoun[3] + (pro_shift - 1))] == pronoun[0]:
+                                    pronoun_pos = pronoun_sent.leaf_treeposition(pronoun[3] + (pro_shift - 1))
+                                    coref_info[pronoun[1]]['shift'] -= 1
+                                elif pronoun_sent[pronoun_sent.leaf_treeposition(pronoun[3] + (pro_shift + 1))] == pronoun[0]:
+                                    pronoun_pos = pronoun_sent.leaf_treeposition(pronoun[3] + (pro_shift + 1))
+                                    coref_info[pronoun[1]]['shift'] += 1
+                                else:
+                                    print "Didn't find the right pronoun, passing.\n"
+                                    break
+
+                            #Hunting for the right coref
+                            original_coref_index = coref_sent.leaf_treeposition(ref[3])[:-2]
+                            if ' '.join(coref_sent[original_coref_index].leaves()) == ref[0]:
+                                coref_pos = coref_sent.leaf_treeposition(ref[3])[:-2]
+                            elif ref[0] in ' '.join(coref_sent[original_coref_index].leaves()):
+                                coref_pos = coref_sent.leaf_treeposition(ref[3])[:-2]
+                            else:
+                                coref_pos = coref_sent.leaf_treeposition(ref[3] + ref_shift)[:-2]
+
+                            if ref[0] not in ' '.join(coref_sent[coref_pos].leaves()):
+                                print "Didn't find the right coref, passing.\n"
+                                pass
+
+                            #Found everything, now replace
                             coref_tree = Tree('COREF', [coref_sent[coref_pos]])
                             pronoun_sent[pronoun_pos[:-1]] = coref_tree
                         except IndexError:
                             #TODO: Should this use the original sentence rather
                             #than possibly bad coreferences?
-                            print """Key {} has a problem with the corefencing.
-                                     Breaking and moving on."""
+                            print """Key {}, sentence {} has a problem with the corefencing. Breaking and moving on.\n""".format(key, sent)
                             break
 
                         #Recording the shift length for the pronoun replacement
-                        if len(coref_tree.leaves()) <= 3:
+                        if len(coref_tree.leaves()) <= 2:
                             coref_info[pronoun[1]]['shift'] += 0
                         else:
                             coref_info[pronoun[1]]['shift'] += coref_tree.height()
@@ -61,14 +84,10 @@ def coref_replace2(event_dict, key):
                         if not any(coref_info[pronoun[1]]['errors']):
                             if pronoun_sent != sent_info[sent]['parse_tree']:
                                 sent_info[sent]['coref_tree'] = pronoun_sent
-                    except RuntimeError:
+                    except RuntimeError, e:
+                        print 'There was an error. {}'.format(e)
                         coref_info[pronoun[1]]['errors'].append(True)
                         pass
-#        try:
-#            print 'Original tree: {}'.format(sent_info[sent]['parse_tree'])
-#            print 'Coref tree: {}'.format(sent_info[sent]['coref_tree'])
-#        except KeyError:
-#            pass
     else:
         pass
 

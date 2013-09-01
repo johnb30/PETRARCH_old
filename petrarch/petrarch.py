@@ -77,6 +77,26 @@ PETRARCH
                                help="""Whether to extract features from
                                sentence. Defaults to False""")
 
+    batch_command = sub_parse.add_parser('batch_parse', help="""Command to run
+                                         the PETRARCH parser in batch mode.""",
+                                         description="""Command to run the
+                                         PETRARCH parser in batch mode.""")
+    batch_command.add_argument('-i', '--inputs',
+                               help='Directory of files, to parse.',
+                               required=True)
+    batch_command.add_argument('-o', '--output',
+                               help='File to write parsed events',
+                               required=True)
+    batch_command.add_argument('-u', '--username',
+                               help="geonames.org username", default=None)
+    batch_command.add_argument('-G', '--geolocate', action='store_true',
+                               default=False, help="""Whether to geolocate
+                               events. Defaults to False""")
+    batch_command.add_argument('-F', '--features', action='store_true',
+                               default=False,
+                               help="""Whether to extract features from
+                               sentence. Defaults to False""")
+
     parallel_command = sub_parse.add_parser('parallel_parse',
                                             help="""Command to run the
                                             PETRARCH parser in parallel.""",
@@ -164,9 +184,27 @@ def main():
                                                     datetime.now().minute,
                                                     datetime.now().second)
         results = parse.parse(events, stanford_dir)
-        for key in results:
-            events[key].update(results[key])
-        del results
+        print 'Done processing...{}:{}.{}'.format(datetime.now().hour,
+                                                  datetime.now().minute,
+                                                  datetime.now().second)
+
+        if geo_boolean or feature_boolean:
+            print 'Feature extraction...{}:{}.{}'.format(datetime.now().hour,
+                                                         datetime.now().minute,
+                                                         datetime.now().second)
+            postprocess.process(events, username, geo_boolean, feature_boolean)
+            print 'Done...{}:{}.{}'.format(datetime.now().hour,
+                                           datetime.now().minute,
+                                           datetime.now().second)
+    elif cli_command == 'batch_parse':
+        print 'Running...{}:{}.{}'.format(datetime.now().hour,
+                                          datetime.now().minute,
+                                          datetime.now().second)
+
+        print 'Parsing sentences...{}:{}.{}'.format(datetime.now().hour,
+                                                    datetime.now().minute,
+                                                    datetime.now().second)
+        results = parse.batch_parse(inputs, stanford_dir)
         print 'Done processing...{}:{}.{}'.format(datetime.now().hour,
                                                   datetime.now().minute,
                                                   datetime.now().second)
@@ -214,10 +252,6 @@ def main():
         for job in jobs:
             results.append(job())
 
-        for chunk in results:
-            for key in chunk:
-                events[key].update(chunk[key])
-        del results
         print 'Done processing...{}:{}.{}'.format(datetime.now().hour,
                                                   datetime.now().minute,
                                                   datetime.now().second)
@@ -236,40 +270,30 @@ def main():
     event_output = str()
 
     print 'Writing the events to file...'
+    for event in results:
+        event_output += '\n=======================\n\n'
+        event_output += 'event id: {}\n\n'.format(event)
+        sent_inf = results[event]['sent_info']
+        for sent in sent_inf['sents']:
+            try:
+                event_output += 'Sentence {}:\n'.format(sent)
+                event_output += 'Word info:\n {}\n\n'.format(sent_inf['sents'][sent]['word_info'])
+                event_output += 'Parse tree:\n {}\n\n'.format(sent_inf['sents'][sent]['parse_tree'])
+                event_output += 'Word dependencies:\n {}\n\n'.format(sent_inf['sents'][sent]['dependencies'])
+                event_output += 'Coref info:\n\n'
+                try:
+                    event_output += 'Corefs:\n {}\n\n'.format(sent_inf['coref_info'][sent]['corefs'])
+                    event_output += 'Coref tree:\n {}\n\n'.format(sent_inf['sents'][sent]['coref_tree'])
+                except KeyError:
+                    pass
+                event_output += '----------------------\n\n'
+            except KeyError:
+                print 'There was a key error'
+                print results[event].keys()
+                print sent_inf['sents'][sent].keys()
+
     with open(out_path, 'w') as f:
-        json.dump(events, f)
-#    for event in events:
-#        event_output += '\n=======================\n\n'
-#        event_output += 'event id: {}\n\n'.format(event)
-#        try:
-#            event_output += 'Word info:\n {}\n\n'.format(events[event]['word_info'])
-#            event_output += 'Parse tree:\n {}\n\n'.format(events[event]['parse_tree'])
-#            event_output += 'Word dependencies:\n {}\n\n'.format(events[event]['dependencies'])
-#        except KeyError:
-#            print 'There was a key error'
-#            print events[event].keys()
-#            print events[event]['story']
-#        if 'corefs' in events[event].keys():
-#            event_output += 'Coref info:\n {}\n'.format(events[event]['corefs'])
-#        if 'coref_tree' in events[event].keys():
-#            try:
-#                event_output += 'Coref tree:\n {}\n\n'.format(events[event]['coref_tree'])
-#            except Exception, e:
-#                print 'There was an error for key {}: {}'.format(event, e)
-#                print events[event]['coref_tree']
-#                pass
-#        try:
-#            event_output += '\nGeolocate: \n {}, {}\n'.format(events[event]['lat'],
-#                                                              events[event]['lon'])
-#        except KeyError:
-#            pass
-#        try:
-#            event_output += 'Feature extract: \n {}\n'.format(events[event]['num_involved'])
-#        except KeyError:
-#            pass
-#
-#    with open(out_path, 'w') as f:
-#        f.write(event_output)
+        f.write(event_output)
 
 
 if __name__ == '__main__':

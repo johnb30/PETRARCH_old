@@ -30,24 +30,15 @@ def parse(event_dict, stanford_dir):
     corenlp_dir = stanford_dir
     core = corenlp.StanfordCoreNLP(corenlp_dir)
     for key in event_dict:
-        print '\nProcessing key {}'.format(key)
         result = core.raw_parse(event_dict[key]['story'])
         if len(result['sentences']) == 1:
             output = _parse_sents(key, result)
             output_dict.update(output)
             if 'coref' in result:
                 utilities.coref_replace2(output_dict, key)
-#                coref_tree = copy.deepcopy(output_dict[key]['parse_tree'])
-#                coref_tree, errors = utilities.coref_replace(coref_tree,
-#                                                             result['coref'])
-#                if not any(errors):
-#                    output_dict[key]['coref_tree'] = coref_tree
-#        if output_dict[key]['coref_tree'] == output_dict[key]['parse_tree']:
-#            del output_dict[key]['coref_tree']
         else:
             print """Key {} is longer than one sentence, passing. Please check
-                  the input format if you would like this key to be
-                  parsed!""".format(key)
+the input format if you would like this key to be parsed!""".format(key)
             pass
 
     return output_dict
@@ -79,7 +70,12 @@ def batch_parse(text_dir, stanford_dir):
     for index in xrange(len(results)):
         parsed = results[index]
         name = parsed['file_name']
-        output_dict = _parse_sents(output_dict, name, parsed)
+        output = _parse_sents(name, parsed)
+        output_dict.update(output)
+    for article in output_dict:
+        utilities.coref_replace2(output_dict, article)
+
+    return output_dict
 
 
 def _parse_sents(key, results):
