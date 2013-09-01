@@ -24,19 +24,23 @@ def parse(event_dict, stanford_dir):
     --------
 
     output_dict : Dictionary
+                    Parsed and formated output for each input event or news
+                    story. This dictionary contains the info that should pass
+                    to the event coder and other postprocessing utilites.
                     Output dictionary format is of the following form. The
-                    main level has keys of event IDs, e.g., AFPN-0301-01, with
-                    dictionaries as values. At this stage, the value dictionary
-                    has one key, `sent_info`, which has another dictionary as
-                    the value. Within the `sent_info` dictionary are keys
-                    `sents` and `coref_info`. Each has dictionaries as their
-                    values. The `sents` dictionary has integers as keys, which
-                    represent the different sentences within a text input. Each
-                    individual sentence dictionary contains the keys
-                    `parse_tree` (nltk.tree), `dependencies` (list),
-                    `np_words` (list), `word_info` (list),
-                    `verb_phrases` (list), `vp_words` (list), and
-                    `noun_phrases` (list). The `coref_info` dictionary has a
+                    main level has story IDs, e.g., story1.txt, as keys
+                    with values dictionaries as values. At this stage, the
+                    value dictionary has one key, `sent_info`, which has
+                    another dictionary as the value. Within the `sent_info`
+                    dictionary are keys `sents` and `coref_info`. Each has
+                    dictionaries as their values. The `sents` dictionary has
+                    integers as keys, which represent the different sentences
+                    within a text input. Each individual sentence dictionary
+                    contains the keys `parse_tree` (nltk.tree),
+                    `dependencies` (list), `np_words` (list),
+                    `word_info` (list), `verb_phrases` (list),
+                    `vp_words` (list), and `noun_phrases` (list).
+                    The `coref_info` dictionary has a
                     similar structure, with each sentence having its own
                     individual dictionary with keys `shift` (integer) and
                     `corefs` (list). Given this, the final structure of the
@@ -54,7 +58,7 @@ def parse(event_dict, stanford_dir):
     for key in event_dict:
         result = core.raw_parse(event_dict[key]['story'])
         if len(result['sentences']) == 1:
-            output = _parse_sents(key, result)
+            output = parse_sents(key, result)
             output_dict.update(output)
             if 'coref' in result:
                 utilities.coref_replace(output_dict, key)
@@ -83,20 +87,24 @@ def batch_parse(text_dir, stanford_dir):
     Returns
     --------
 
-    output_dict : Dictionary
+    output_dict : Dictionary.
+                    Parsed and formated output for each input event or news
+                    story. This dictionary contains the info that should pass
+                    to the event coder and other postprocessing utilites.
                     Output dictionary format is of the following form. The
-                    main level has keys of story IDs, e.g., story1.txt, with values
-                    of dictionaries. At this stage, the value dictionary has
-                    one key, `sent_info`, which has another dictionary as
-                    the value. Within the `sent_info` dictionary are keys
-                    `sents` and `coref_info`. Each has dictionaries as their
-                    values. The `sents` dictionary has integers as keys, which
-                    represent the different sentences within a text input. Each
-                    individual sentence dictionary contains the keys
-                    `parse_tree` (nltk.tree), `dependencies` (list),
-                    `np_words` (list), `word_info` (list),
-                    `verb_phrases` (list), `vp_words` (list), and
-                    `noun_phrases` (list). The `coref_info` dictionary has a
+                    main level has story IDs, e.g., story1.txt, as keys
+                    with values dictionaries as values. At this stage, the
+                    value dictionary has one key, `sent_info`, which has
+                    another dictionary as the value. Within the `sent_info`
+                    dictionary are keys `sents` and `coref_info`. Each has
+                    dictionaries as their values. The `sents` dictionary has
+                    integers as keys, which represent the different sentences
+                    within a text input. Each individual sentence dictionary
+                    contains the keys `parse_tree` (nltk.tree),
+                    `dependencies` (list), `np_words` (list),
+                    `word_info` (list), `verb_phrases` (list),
+                    `vp_words` (list), and `noun_phrases` (list).
+                    The `coref_info` dictionary has a
                     similar structure, with each sentence having its own
                     individual dictionary with keys `shift` (integer) and
                     `corefs` (list). Given this, the final structure of the
@@ -114,7 +122,7 @@ def batch_parse(text_dir, stanford_dir):
     for index in xrange(len(results)):
         parsed = results[index]
         name = parsed['file_name']
-        output = _parse_sents(name, parsed)
+        output = parse_sents(name, parsed)
         output_dict.update(output)
     for article in output_dict:
         utilities.coref_replace(output_dict, article)
@@ -122,7 +130,53 @@ def batch_parse(text_dir, stanford_dir):
     return output_dict
 
 
-def _parse_sents(key, results):
+def parse_sents(key, results):
+    """
+    Function to create structured input for use in the other functions within
+    PETRARCH. Final output is a series of dictionaries within dictionaries
+    that contains information about each sentence within a new story. This
+    allows for the coherent access of sentence attributes, which is necessary
+    for tasks such as coreference replacement.
+
+    Parameters
+    ----------
+
+    key: String.
+            Unique identifier for a story or event.
+
+    results: Dictionary.
+                Parsed results as output by StanfordNLP and the StanfordCoreNLP
+                Python library.
+
+    Returns
+    -------
+
+    sent_output: Dictionary.
+                    Information for each sentence within a news story.
+                    Output dictionary format is of the following form. The
+                    main level has event or story IDs as keys, with dictionaries
+                    as values. At this stage, the value dictionary has
+                    one key, `sent_info`, which has another dictionary as
+                    the value. Within the `sent_info` dictionary are keys
+                    `sents` and `coref_info`. Each has dictionaries as their
+                    values. The `sents` dictionary has integers as keys, which
+                    represent the different sentences within a text input. Each
+                    individual sentence dictionary contains the keys
+                    `parse_tree` (nltk.tree), `dependencies` (list),
+                    `np_words` (list), `word_info` (list),
+                    `verb_phrases` (list), `vp_words` (list), and
+                    `noun_phrases` (list). The `coref_info` dictionary has a
+                    similar structure, with each sentence having its own
+                    individual dictionary with keys `shift` (integer) and
+                    `corefs` (list). Given this, the final structure of the
+                    output resembles:
+                    {'event_id': {'sent_info': {'sents': {0: {'parse_tree': tree
+                                                                'dependencies': list}
+                                                            1: {...}}
+                                                'coref_info': {0: {'shift': 0
+                                                                'corefs': []}}
+                                                }}}
+    """
     sent_output = dict()
     num_sents = len(results['sentences'])
     sent_info = dict()

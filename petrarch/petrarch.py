@@ -243,13 +243,18 @@ def main():
         print 'Parsing sentences...{}:{}.{}'.format(datetime.now().hour,
                                                     datetime.now().minute,
                                                     datetime.now().second)
-        jobs = [job_server.submit(parse.parse, (chunk, stanford_dir,), (),
+        jobs = [job_server.submit(parse.parse, (chunk, stanford_dir,),
+                                  (parse.parse_sents,),
                                   ("corenlp", "nltk.tree", "utilities",))
                 for chunk in chunks]
 
-        results = list()
+        parallel_results = list()
         for job in jobs:
-            results.append(job())
+            parallel_results.append(job())
+
+        results = dict()
+        for result in parallel_results:
+            results.update(result)
 
         print 'Done processing...{}:{}.{}'.format(datetime.now().hour,
                                                   datetime.now().minute,

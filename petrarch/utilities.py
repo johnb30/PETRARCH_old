@@ -25,7 +25,7 @@ def coref_replace(event_dict, key):
     key: String.
             ID of the event or news story being processed.
 
-;    """
+    """
     #TODO: This could use some major refactoring.
     if 'coref_info' in event_dict[key]['sent_info'].keys():
         sent_info = event_dict[key]['sent_info']['sents']
@@ -71,7 +71,6 @@ def coref_replace(event_dict, key):
                                     pronoun_pos = pronoun_sent.leaf_treeposition(pronoun[3] + (pro_shift + 1))
                                     coref_info[pronoun[1]]['shift'] += 1
                                 else:
-                                    print "Didn't find the right pronoun, passing.\n"
                                     break
 
                             #Hunting for the right coref
@@ -84,7 +83,6 @@ def coref_replace(event_dict, key):
                                 coref_pos = coref_sent.leaf_treeposition(ref[3] + ref_shift)[:-2]
 
                             if ref[0] not in ' '.join(coref_sent[coref_pos].leaves()):
-                                print "Didn't find the right coref, passing.\n"
                                 pass
 
                             #Found everything, now replace
