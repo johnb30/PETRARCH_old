@@ -21,7 +21,7 @@ Note that `origin` (if you are cloning the forked petrarch repository to your lo
 You can then pull changes from the upstream repository and rebasing against the desired branch (in this example, master).
 
 	git fetch upstream
-	git rebase upstream/master
+	git rebase upstream/development
 
 More detailed information on the use of git can be found in the [git documentation](http://git-scm.com/documentation).
 
