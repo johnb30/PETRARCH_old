@@ -1,7 +1,7 @@
 Contributing Code
 =================
 
-You can check out the latest version of petrarch by cloning this
+You can check out the latest version of PETRARCH by cloning this
 repository using `git <http://git-scm.com/>`_.
 
 ::
@@ -38,12 +38,13 @@ set an upstream remote:
     git remote add upstream https://github.com/eventdata/PETRARCH.git
 
 You can then pull changes from the upstream repository and rebasing
-against the desired branch (in this example, master).
+against the desired branch (in this example, development). You should 
+always issue pull requests against the development branch.
 
 ::
 
     git fetch upstream
-    git rebase upstream/master
+    git rebase upstream/development
 
 More detailed information on the use of git can be found in the `git
 documentation <http://git-scm.com/documentation>`_.
